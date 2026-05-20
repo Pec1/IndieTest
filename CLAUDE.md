@@ -10,16 +10,23 @@ A ideia: conectar desenvolvedores indie que precisam testar seus jogos/softwares
 
 ## Stack
 
-**Front-end** (`/IndieTest`):
+**Estrutura monorepo:**
+```
+apps/
+  web/   → frontend (React + Vite + TypeScript)
+  api/   → backend  (Fastify + Prisma + PostgreSQL)
+```
+
+**Front-end** (`/apps/web`):
 - React 18 + Vite + TypeScript
 - Tailwind CSS + **shadcn/ui** (Radix primitives)
-- React Router v6
+- React Router v7
 - Lucide icons
 
-**Back-end** (`/backend`):
+**Back-end** (`/apps/api`):
 - Node.js 22 LTS + TypeScript
 - Fastify (não Express)
-- **Prisma ORM 7.x** + PostgreSQL — versão nova (nov/2025) sem o engine Rust, bundle menor e cold start mais rápido
+- **Prisma ORM 5.x** + PostgreSQL
 - Zod para validação
 - JWT (em cookie `accessToken` ou header `Authorization: Bearer`)
 - bcryptjs para hash de senha
@@ -32,7 +39,7 @@ Padrão de organização do back é inspirado em `Pec1/users-api`: cada endpoint
 
 12 models no Prisma, com herança 1:0..1 entre `Usuario` e os papéis (`Administrador`, `Testador`, `PerfilDesenvolvedor`). Fluxo central: `Projeto → Versao → Convite → TesteSessao → FeedbackBug → (Anexo, RespostaDesenvolvedor)`.
 
-Schema completo está em `backend/prisma/schema.prisma`. **Nunca modifique sem perguntar** — qualquer alteração precisa refletir no MER/DER do documento da entrega.
+Schema completo está em `apps/api/prisma/schema.prisma`. **Nunca modifique sem perguntar** — qualquer alteração precisa refletir no MER/DER do documento da entrega.
 
 ## Status das entregas
 
@@ -41,12 +48,13 @@ Schema completo está em `backend/prisma/schema.prisma`. **Nunca modifique sem p
 - **Entrega 3** (01–03/junho) — pendente. Sistema funcional integrado.
 - **Entrega 4** (15–17/junho) — pendente. Sistema completo + testes + apresentação final.
 
-## Telas faltando no front
+## Telas no front (todas implementadas)
 
-1. **Iniciar Sessão de Teste** — crítica, sem ela não dá pra reportar bug
-2. **Gerenciar Versões do Projeto** — dev publicar v0.9, v1.0 etc.
-3. **Listar/Aceitar Convites** — fluxo de convite por token
-4. **Notificações** — sino/dropdown
+Todas as 4 telas que estavam pendentes foram implementadas:
+- `StartTestSession.tsx` — iniciar sessão de teste
+- `ManageVersions.tsx` — gerenciar versões do projeto
+- `Invites.tsx` — listar convites (aceite/recusa ainda é somente local, sem endpoint backend)
+- `Notifications.tsx` — notificações
 
 ## Endpoints existentes (back)
 
@@ -57,7 +65,7 @@ Schema completo está em `backend/prisma/schema.prisma`. **Nunca modifique sem p
 **Sessões**: `POST /teste-sessoes`
 **Bugs**: `POST /bugs`, `GET /bugs`, `GET /bugs/:id`, `PATCH /bugs/:id/status`, `POST /bugs/:id/respostas`
 
-Detalhes e exemplos de payload em `backend/api.http`.
+Detalhes e exemplos de payload em `apps/api/api.http`.
 
 ## Regras de negócio importantes
 
@@ -86,8 +94,9 @@ Essas regras já estão implementadas nas rotas correspondentes — se for adici
 
 - `IndieTest_Entregavel1_Final.docx` — documento oficial da Entrega 1 (situação, requisitos, MER/DER, schema)
 - `MER_IndieTest.png` / `DER_IndieTest.png` — diagramas standalone
-- `backend/api.http` — coleção de requests para testar a API no VS Code REST Client
-- `backend/README.md` — instruções de setup e lista de endpoints
+- `apps/api/api.http` — coleção de requests para testar a API no VS Code REST Client
+- `apps/api/README.md` — instruções de setup e lista de endpoints
+- `apps/api/.env.example` — variáveis de ambiente necessárias
 
 ## Preferências de interação
 
