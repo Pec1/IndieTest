@@ -24,24 +24,19 @@ export async function authMiddleware(request: CRequest, reply: FastifyReply) {
             token = authHeader.substring(7);
         }
     }
-    console.log("Token Recebido:", token);
-
     if (!token) {
-        return reply.status(401).send({ message: 'Unauthorized' });
+        return reply.status(401).send({ message: 'Não autenticado' });
     }
 
     if (token.split('.').length !== 3) {
-        console.log("Token formatado incorretamente:", token);
-        return reply.status(401).send({ message: 'Invalid token format' });
+        return reply.status(401).send({ message: 'Token inválido' });
     }
 
     try {
         const decodedToken = verify(token, jwtSecret);
-        console.log("Token Decodificado:", decodedToken);
         request.user = decodedToken;
         return;
-    } catch (error) {
-        console.log("Erro na verificação do token:", error);
-        return reply.status(401).send({ message: 'Invalid token' });
+    } catch {
+        return reply.status(401).send({ message: 'Token inválido ou expirado' });
     }
 }

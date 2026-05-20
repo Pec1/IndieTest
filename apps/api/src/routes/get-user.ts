@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import z from "zod"
 import { prisma } from "../lib/prisma"
+import { CRequest } from "../authMiddleware/authenticate"
 
 export async function getUser(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().get('/users/:id', {
@@ -10,7 +11,7 @@ export async function getUser(app: FastifyInstance) {
                 id: z.string().uuid(),
             }),
         }
-    }, async (request, reply) => {
+    }, async (request: CRequest, reply) => {
         const { id } = request.params
 
         const usuario = await prisma.usuario.findUnique({

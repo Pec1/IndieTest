@@ -3,6 +3,7 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma"
 import { FastifyInstance } from "fastify"
 import bcrypt from "bcryptjs"
+import { CRequest } from "../authMiddleware/authenticate"
 
 export async function createUser(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().post('/users', {
@@ -26,7 +27,7 @@ export async function createUser(app: FastifyInstance) {
                     userId: z.string().uuid(),
                     tipo: z.string(),
                 }),
-                401: z.object({
+                409: z.object({
                     message: z.string(),
                 }),
                 400: z.object({
@@ -34,7 +35,7 @@ export async function createUser(app: FastifyInstance) {
                 }),
             }
         },
-    }, async (request, reply) => {
+    }, async (request: CRequest, reply) => {
         const {
             nome, email, senha, tipo,
             nomeEstudio, dataNascimento, pais, nivelAcesso
@@ -47,7 +48,7 @@ export async function createUser(app: FastifyInstance) {
             where: { email: normalizedEmail },
         });
         if (existingUser) {
-            return reply.status(401).send({ message: 'Usuário com este e-mail já existe' });
+            return reply.status(409).send({ message: 'Usuário com este e-mail já existe' });
         }
 
         // Validação de campos obrigatórios por tipo

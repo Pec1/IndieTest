@@ -4,6 +4,7 @@ import z from "zod";
 import { prisma } from "../lib/prisma";
 import { sign } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { CRequest } from "../authMiddleware/authenticate";
 
 export async function login(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().post('/login', {
@@ -28,7 +29,7 @@ export async function login(app: FastifyInstance) {
                 }),
             },
         },
-    }, async (request, reply) => {
+    }, async (request: CRequest, reply) => {
         const { email, senha } = request.body
 
         const jwtSecret = process.env.JWT_SECRET

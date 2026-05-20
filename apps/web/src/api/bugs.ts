@@ -79,7 +79,7 @@ export async function atualizarStatusBug(
 export async function criarRespostaBug(
   id: string,
   body: { mensagem: string; visivelTestador?: boolean }
-): Promise<{ message: string; resposta: Bug['respostas'][0] }> {
+): Promise<{ message: string; resposta: NonNullable<Bug['respostas']>[0] }> {
   return api(`/bugs/${id}/respostas`, {
     method: 'POST',
     body: JSON.stringify(body),

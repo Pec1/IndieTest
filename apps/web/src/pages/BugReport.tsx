@@ -4,7 +4,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { Link, useNavigate } from 'react-router';
 import { criarBug } from '../api/bugs';
-import { getProjetos } from '../api/projetos';
+import { getProjetos, getProjeto } from '../api/projetos';
 import { criarSessao } from '../api/sessoes';
 import type { Projeto, Versao } from '../api/projetos';
 import { ApiError } from '../api/client';
@@ -57,10 +57,10 @@ export function BugReport() {
 
   useEffect(() => {
     if (!projetoSelecionado) { setVersoes([]); setVersaoSelecionada(''); return; }
-    const proj = projetos.find(p => p.id === projetoSelecionado);
-    setVersoes(proj?.versoes || []);
-    setVersaoSelecionada('');
-  }, [projetoSelecionado, projetos]);
+    getProjeto(projetoSelecionado)
+      .then(({ projeto: p }) => { setVersoes(p.versoes || []); setVersaoSelecionada(''); })
+      .catch(console.error);
+  }, [projetoSelecionado]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,10 +69,13 @@ export function BugReport() {
     setErro('');
     setEnviando(true);
     try {
+      const ua = navigator.userAgent;
+      const so = ua.includes('Win') ? 'Windows' : ua.includes('Mac') ? 'macOS' : ua.includes('Linux') ? 'Linux' : 'Outro';
+      const dispositivo = (navigator as { userAgentData?: { platform?: string } }).userAgentData?.platform || so;
       const { sessao } = await criarSessao({
         versaoId: versaoSelecionada,
-        dispositivo: navigator.platform || 'Desconhecido',
-        sistemaOperacional: navigator.userAgent.includes('Win') ? 'Windows' : navigator.userAgent.includes('Mac') ? 'macOS' : 'Linux',
+        dispositivo,
+        sistemaOperacional: so,
       });
       await criarBug({ testeSessaoId: sessao.id, titulo, descricao, tipo, severidade });
       navigate('/bug-tracker');
@@ -82,8 +85,6 @@ export function BugReport() {
       setEnviando(false);
     }
   }
-
-  const projetoAtual = projetos.find(p => p.id === projetoSelecionado);
 
   return (
     <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#4A3AFF] selection:text-white flex flex-col">
