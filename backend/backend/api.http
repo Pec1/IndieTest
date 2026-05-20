@@ -1,0 +1,125 @@
+### Health check
+GET http://localhost:3333/health
+
+### 1. Cadastro de testador
+POST http://localhost:3333/users
+Content-Type: application/json
+
+{
+    "nome": "João Testador",
+    "email": "joao@test.com",
+    "senha": "senha12345",
+    "tipo": "testador",
+    "pais": "Brasil"
+}
+
+### 2. Cadastro de desenvolvedor
+POST http://localhost:3333/users
+Content-Type: application/json
+
+{
+    "nome": "Maria Dev",
+    "email": "maria@studio.com",
+    "senha": "senha12345",
+    "tipo": "desenvolvedor",
+    "nomeEstudio": "PixelForge Studio"
+}
+
+### 3. Login
+POST http://localhost:3333/login
+Content-Type: application/json
+
+{
+    "email": "maria@studio.com",
+    "senha": "senha12345"
+}
+
+### 4. Dados do usuário logado
+GET http://localhost:3333/painel
+Authorization: Bearer <COLE_O_TOKEN_AQUI>
+
+### 5. Criar projeto (logado como dev)
+POST http://localhost:3333/projetos
+Content-Type: application/json
+Authorization: Bearer <COLE_O_TOKEN_AQUI>
+
+{
+    "nome": "ChromaQuest",
+    "descricao": "Jogo indie de puzzle baseado em cores",
+    "categoria": "Jogo",
+    "status": "em_teste"
+}
+
+### 6. Listar todos os projetos
+GET http://localhost:3333/projetos
+Authorization: Bearer <COLE_O_TOKEN_AQUI>
+
+### 7. Detalhes de um projeto
+GET http://localhost:3333/projetos/<UUID_DO_PROJETO>
+Authorization: Bearer <COLE_O_TOKEN_AQUI>
+
+### 8. Criar versão de um projeto
+POST http://localhost:3333/projetos/<UUID_DO_PROJETO>/versoes
+Content-Type: application/json
+Authorization: Bearer <COLE_O_TOKEN_AQUI>
+
+{
+    "numeroVersao": "v0.9.2",
+    "changelog": "Correções no sistema de iluminação e novo nível",
+    "status": "ativa"
+}
+
+### 9. Iniciar uma sessão de teste (logado como testador)
+POST http://localhost:3333/teste-sessoes
+Content-Type: application/json
+Authorization: Bearer <TOKEN_DE_TESTADOR>
+
+{
+    "versaoId": "<UUID_DA_VERSAO>",
+    "dispositivo": "Notebook Dell",
+    "sistemaOperacional": "Windows 11"
+}
+
+### 10. Reportar um bug
+POST http://localhost:3333/bugs
+Content-Type: application/json
+Authorization: Bearer <TOKEN_DE_TESTADOR>
+
+{
+    "testeSessaoId": "<UUID_DA_SESSAO>",
+    "titulo": "Crash ao trocar de fase",
+    "descricao": "O jogo trava sempre que troco da fase 3 para a 4",
+    "tipo": "Bug",
+    "severidade": "Alta"
+}
+
+### 11. Listar bugs
+GET http://localhost:3333/bugs
+Authorization: Bearer <TOKEN>
+
+### 12. Listar bugs filtrados por severidade
+GET http://localhost:3333/bugs?severidade=Critica&status=aberto
+Authorization: Bearer <TOKEN>
+
+### 13. Detalhes de um bug
+GET http://localhost:3333/bugs/<UUID_DO_BUG>
+Authorization: Bearer <TOKEN>
+
+### 14. Atualizar status do bug (admin ou dev dono)
+PATCH http://localhost:3333/bugs/<UUID_DO_BUG>/status
+Content-Type: application/json
+Authorization: Bearer <TOKEN_DEV>
+
+{
+    "status": "em_analise"
+}
+
+### 15. Responder a um bug (desenvolvedor)
+POST http://localhost:3333/bugs/<UUID_DO_BUG>/respostas
+Content-Type: application/json
+Authorization: Bearer <TOKEN_DEV>
+
+{
+    "mensagem": "Vamos investigar e voltar com uma correção",
+    "visivelTestador": true
+}

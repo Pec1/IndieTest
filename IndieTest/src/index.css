@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Oswald:wght@500;700;900&display=swap');
+
+@theme {
+  --font-display: 'Oswald', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #0F1013;
+  color: #fff;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+button[role="switch"] {
+  border-radius: 0 !important;
+}
+button[role="switch"] [data-slot="switch-thumb"] {
+  border-radius: 0 !important;
+}
+
+@keyframes grid-pulse {
+  0%, 100% { opacity: 0.05; }
+  50% { opacity: 0.1; }
+}
+.animated-grid {
+  animation: grid-pulse 3s ease-in-out infinite;
+}
+
+@keyframes slide-hazard {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+.hazard-stripes {
+  animation: slide-hazard 1s linear infinite;
+}

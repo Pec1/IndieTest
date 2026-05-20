@@ -1,0 +1,298 @@
+import React, { useEffect, useState } from 'react';
+import { Crosshair, ArrowLeft, Search, Bug, AlertTriangle, X, Image as ImageIcon, MessageSquare, Shield, ChevronRight } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { Link, useNavigate } from 'react-router';
+import { getBugs, atualizarStatusBug, type Bug as BugType } from '../api/bugs';
+import { useAuth } from '../contexts/AuthContext';
+
+function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
+
+function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;
+}
+
+const SEVERIDADES = [
+  { id: '', name: 'TODAS' },
+  { id: 'Critica', name: 'CRÍTICA', color: 'red' },
+  { id: 'Alta', name: 'ALTA', color: 'orange' },
+  { id: 'Media', name: 'MÉDIA', color: 'yellow' },
+  { id: 'Baixa', name: 'BAIXA', color: 'gray' },
+];
+
+const STATUSES = [
+  { id: '', name: 'TODOS' },
+  { id: 'aberto', name: 'ABERTO', color: '#D4FF00' },
+  { id: 'em_analise', name: 'EM_ANÁLISE', color: '#4A3AFF' },
+  { id: 'corrigido', name: 'CORRIGIDO', color: '#10b981' },
+  { id: 'fechado', name: 'FECHADO', color: '#6b7280' },
+];
+
+function SeverityBadge({ severity }: { severity: string }) {
+  const colors: Record<string, string> = {
+    Critica: 'bg-red-500/10 text-red-500 border-red-500',
+    Alta: 'bg-orange-500/10 text-orange-500 border-orange-500',
+    Media: 'bg-[#D4FF00]/10 text-[#D4FF00] border-[#D4FF00]',
+    Baixa: 'bg-zinc-500/10 text-zinc-500 border-zinc-500',
+  };
+  const labels: Record<string, string> = { Critica: 'CRÍTICA', Alta: 'ALTA', Media: 'MÉDIA', Baixa: 'BAIXA' };
+  return <span className={cn("font-mono text-[10px] font-bold uppercase px-2 py-1 border", colors[severity] || 'border-zinc-500 text-zinc-500')}>{labels[severity] || severity}</span>;
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const st = STATUSES.find(s => s.id === status);
+  if (!st || !st.id) return <span className="font-mono text-[10px] text-zinc-500">{status}</span>;
+  return (
+    <span className="font-mono text-[10px] font-bold uppercase px-2 py-1 border"
+      style={{ color: st.color, borderColor: st.color, backgroundColor: `${st.color}20` }}>
+      {st.name}
+    </span>
+  );
+}
+
+function BugDetailPanel({ bug, onClose, podeAlterarStatus }: { bug: BugType; onClose: () => void; podeAlterarStatus: boolean }) {
+  const [selectedStatus, setSelectedStatus] = useState(bug.status);
+  const [salvando, setSalvando] = useState(false);
+
+  async function handleStatusChange(novoStatus: string) {
+    setSalvando(true);
+    try {
+      await atualizarStatusBug(bug.id, novoStatus);
+      setSelectedStatus(novoStatus);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <div className="flex-1 bg-black/80" onClick={onClose} />
+      <div className="w-full max-w-2xl bg-[#1C1D22] border-l-2 border-[#D4FF00] overflow-y-auto">
+        <div className="sticky top-0 z-10 bg-[#0F1013] border-b border-[#2C2D35] p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <span className="font-mono text-xs text-zinc-500">{bug.id.slice(0, 8)}</span>
+                <SeverityBadge severity={bug.severidade} />
+                <StatusBadge status={selectedStatus} />
+              </div>
+              <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">{bug.titulo}</h2>
+              <div className="flex items-center gap-4 mt-2 text-xs font-mono text-zinc-500">
+                <span>{bug.testeSessao?.versao?.projeto?.nome || 'PROJETO'}</span>
+                <span>{bug.testeSessao?.versao?.numeroVersao}</span>
+                <span>{new Date(bug.dataCriacao).toLocaleDateString('pt-BR')}</span>
+              </div>
+            </div>
+            <button onClick={onClose} className="text-zinc-500 hover:text-white border border-transparent hover:border-[#2C2D35] p-2 transition-colors">
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+        <div className="p-6 space-y-6">
+          <div>
+            <div className="font-mono text-[10px] text-zinc-500 uppercase mb-3 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#4A3AFF] inline-block" /> DESCRIÇÃO_RN02
+            </div>
+            <div className="bg-[#0F1013] border border-[#2C2D35] p-4">
+              <pre className="font-mono text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap">{bug.descricao}</pre>
+            </div>
+          </div>
+          {bug.anexos && bug.anexos.length > 0 && (
+            <div>
+              <div className="font-mono text-[10px] text-zinc-500 uppercase mb-3 flex items-center gap-2">
+                <ImageIcon size={14} /> EVIDÊNCIAS_RF08
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {bug.anexos.map(a => (
+                  <div key={a.id} className="bg-[#0F1013] border border-[#2C2D35] p-3 flex items-center gap-2">
+                    <ImageIcon size={14} className="text-zinc-500" />
+                    <span className="font-mono text-xs text-zinc-300 truncate">{a.nomeArquivo}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {bug.respostas && bug.respostas.length > 0 && (
+            <div>
+              <div className="font-mono text-[10px] text-zinc-500 uppercase mb-3 flex items-center gap-2">
+                <MessageSquare size={14} /> DISCUSSÃO_RF15
+              </div>
+              <div className="space-y-3">
+                {bug.respostas.map(r => (
+                  <div key={r.id} className="bg-[#0F1013] border border-[#2C2D35] p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-display font-bold text-white uppercase text-sm">{r.desenvolvedor?.usuario?.nome || 'DESENVOLVEDOR'}</span>
+                      <span className="font-mono text-[10px] text-[#D4FF00] border border-[#D4FF00]/30 px-1">[DEV]</span>
+                    </div>
+                    <p className="font-mono text-xs text-zinc-300">{r.mensagem}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {podeAlterarStatus && (
+            <div>
+              <div className="font-mono text-[10px] text-zinc-500 uppercase mb-3 flex items-center gap-2">
+                <Shield size={14} /> CONTROLE_STATUS_RN08
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {STATUSES.filter(s => s.id).map(st => (
+                  <button key={st.id} onClick={() => handleStatusChange(st.id)} disabled={salvando || selectedStatus === st.id}
+                    className={cn("font-mono text-[10px] font-bold uppercase px-3 py-2 border transition-all",
+                      selectedStatus === st.id ? "opacity-50 cursor-not-allowed" : "hover:opacity-80")}
+                    style={{ color: st.color, borderColor: st.color, backgroundColor: `${st.color}15` }}>
+                    {salvando && selectedStatus !== st.id ? '...' : st.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="pt-4 border-t border-[#2C2D35]">
+            <Link to={`/bug/${bug.id}`} className="font-display font-bold uppercase tracking-widest px-6 py-3 bg-[#4A3AFF] text-white hover:bg-[#382bd6] transition-colors flex items-center justify-center gap-2 w-full">
+              <ChevronRight size={16} /> ABRIR_DISCUSSÃO_COMPLETA
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function BugTracker() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [bugs, setBugs] = useState<BugType[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [busca, setBusca] = useState('');
+  const [filtroSeveridade, setFiltroSeveridade] = useState('');
+  const [filtroStatus, setFiltroStatus] = useState('');
+  const [bugSelecionado, setBugSelecionado] = useState<BugType | null>(null);
+
+  const podeAlterarStatus = user?.tipo === 'desenvolvedor' || user?.tipo === 'administrador';
+
+  useEffect(() => {
+    const params: Record<string, string> = {};
+    if (filtroSeveridade) params.severidade = filtroSeveridade;
+    if (filtroStatus) params.status = filtroStatus;
+    setCarregando(true);
+    getBugs(Object.keys(params).length > 0 ? params : undefined)
+      .then(({ bugs: b }) => setBugs(b))
+      .catch(console.error)
+      .finally(() => setCarregando(false));
+  }, [filtroSeveridade, filtroStatus]);
+
+  const bugsFiltrados = bugs.filter(b =>
+    !busca || b.titulo.toLowerCase().includes(busca.toLowerCase()) || b.descricao.toLowerCase().includes(busca.toLowerCase())
+  );
+
+  const estatisticas = {
+    criticos: bugs.filter(b => b.severidade === 'Critica').length,
+    altos: bugs.filter(b => b.severidade === 'Alta').length,
+    abertos: bugs.filter(b => b.status === 'aberto').length,
+    corrigidos: bugs.filter(b => b.status === 'corrigido').length,
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
+      <header className="flex flex-col md:flex-row items-stretch border-b border-[#2C2D35] bg-[#0F1013] sticky top-0 z-40">
+        <div className="flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35]">
+          <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
+          <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
+        </div>
+        <div className="flex-1 flex overflow-x-auto no-scrollbar items-center px-4 md:px-6 justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="flex items-center gap-2 font-mono text-xs text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-[#2C2D35] p-2 bg-[#1C1D22]">
+              <ArrowLeft size={16} /> VOLTAR
+            </button>
+            <div className="h-4 w-px bg-[#2C2D35]" />
+            <span className="font-mono text-xs text-[#D4FF00] font-bold tracking-widest">BUG_TRACKER // RF09</span>
+          </div>
+          <Link to="/report-bug" className="hidden sm:flex font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#4A3AFF] text-white hover:bg-white hover:text-black transition-all text-xs items-center gap-2">
+            <Bug size={14} /> REPORTAR BUG
+          </Link>
+        </div>
+      </header>
+      <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-6">
+        <div className="mb-6">
+          <h1 className="text-4xl font-display font-black uppercase tracking-tighter mb-1">Matriz de <span className="text-[#D4FF00]">Triagem</span></h1>
+          <p className="font-mono text-xs text-zinc-500">CENTRAL DE RASTREAMENTO E CLASSIFICAÇÃO DE ANOMALIAS</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border border-[#2C2D35] mb-6">
+          {[
+            { label: 'CRÍTICOS', value: estatisticas.criticos, color: 'text-red-500' },
+            { label: 'ALTOS', value: estatisticas.altos, color: 'text-orange-500' },
+            { label: 'ABERTOS', value: estatisticas.abertos, color: 'text-[#D4FF00]' },
+            { label: 'CORRIGIDOS', value: estatisticas.corrigidos, color: 'text-[#10b981]' },
+          ].map((s, i) => (
+            <div key={i} className="p-4 bg-[#1C1D22] border-r border-[#2C2D35] last:border-r-0">
+              <div className="font-mono text-[10px] text-zinc-500 mb-2">{s.label}</div>
+              <div className={cn("font-display font-black text-4xl tracking-tighter", s.color)}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-3 mb-6">
+          <div className="flex-1 min-w-48 relative flex items-center border border-[#2C2D35] bg-[#1C1D22] focus-within:border-[#D4FF00] transition-colors">
+            <Search size={16} className="absolute left-3 text-zinc-500" />
+            <input type="text" value={busca} onChange={e => setBusca(e.target.value)} placeholder="BUSCAR BUGS..."
+              className="w-full bg-transparent text-white py-3 pl-10 pr-4 font-mono text-sm outline-none placeholder:text-zinc-600" />
+          </div>
+          <select value={filtroSeveridade} onChange={e => setFiltroSeveridade(e.target.value)}
+            className="bg-[#1C1D22] border border-[#2C2D35] text-white py-3 px-4 font-mono text-xs outline-none focus:border-[#D4FF00] appearance-none cursor-pointer">
+            {SEVERIDADES.map(s => <option key={s.id} value={s.id} className="bg-[#1C1D22]">{s.name}</option>)}
+          </select>
+          <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)}
+            className="bg-[#1C1D22] border border-[#2C2D35] text-white py-3 px-4 font-mono text-xs outline-none focus:border-[#D4FF00] appearance-none cursor-pointer">
+            {STATUSES.map(s => <option key={s.id} value={s.id} className="bg-[#1C1D22]">{s.name}</option>)}
+          </select>
+        </div>
+        <div className="border border-[#2C2D35] bg-[#1C1D22] overflow-x-auto">
+          <table className="w-full text-left font-mono text-xs whitespace-nowrap">
+            <thead className="bg-[#0F1013] border-b border-[#2C2D35] text-zinc-500">
+              <tr>
+                <th className="p-4 font-normal">BUG_ID</th>
+                <th className="p-4 font-normal">TÍTULO</th>
+                <th className="p-4 font-normal">PROJETO</th>
+                <th className="p-4 font-normal">SEVERIDADE</th>
+                <th className="p-4 font-normal">STATUS</th>
+                <th className="p-4 font-normal">DATA</th>
+                <th className="p-4 font-normal">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#2C2D35]">
+              {carregando && <tr><td colSpan={7} className="p-8 text-center text-[#D4FF00] animate-pulse">CARREGANDO_BUGS...</td></tr>}
+              {!carregando && bugsFiltrados.length === 0 && (
+                <tr><td colSpan={7} className="p-8 text-center text-zinc-500">[NENHUM_BUG_ENCONTRADO]</td></tr>
+              )}
+              {bugsFiltrados.map(bug => (
+                <tr key={bug.id} onClick={() => setBugSelecionado(bug)}
+                  className="hover:bg-[#25262c] transition-colors group cursor-pointer">
+                  <td className="p-4 text-zinc-400">{bug.id.slice(0, 8)}</td>
+                  <td className="p-4 font-bold text-white max-w-xs truncate">{bug.titulo}</td>
+                  <td className="p-4 text-[#D4FF00]">{bug.testeSessao?.versao?.projeto?.nome || '—'}</td>
+                  <td className="p-4"><SeverityBadge severity={bug.severidade} /></td>
+                  <td className="p-4"><StatusBadge status={bug.status} /></td>
+                  <td className="p-4 text-zinc-500">{new Date(bug.dataCriacao).toLocaleDateString('pt-BR')}</td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <button onClick={e => { e.stopPropagation(); setBugSelecionado(bug); }}
+                        className="text-zinc-500 hover:text-white border border-transparent hover:border-[#2C2D35] p-1 transition-colors">
+                        <AlertTriangle size={14} />
+                      </button>
+                      <Link to={`/bug/${bug.id}`} onClick={e => e.stopPropagation()}
+                        className="text-zinc-500 hover:text-[#4A3AFF] border border-transparent hover:border-[#4A3AFF]/30 p-1 transition-colors">
+                        <MessageSquare size={14} />
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </main>
+      {bugSelecionado && <BugDetailPanel bug={bugSelecionado} onClose={() => setBugSelecionado(null)} podeAlterarStatus={podeAlterarStatus} />}
+    </div>
+  );
+}

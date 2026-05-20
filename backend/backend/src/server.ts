@@ -1,0 +1,108 @@
+import { serializerCompiler, validatorCompiler } from "fastify-type-provider-zod";
+import { fastify } from "fastify";
+import cookie from '@fastify/cookie';
+import fastifyCors from '@fastify/cors';
+
+// Rotas de Usuario / Autenticação
+import { createUser } from "./routes/create-user";
+import { login } from "./routes/login";
+import { getUser } from "./routes/get-user";
+import { getAllUsers } from "./routes/get-all-users";
+
+// Rotas de Projeto
+import { createProject } from "./routes/create-project";
+import { getAllProjects } from "./routes/get-all-projects";
+import { getProject } from "./routes/get-project";
+
+// Rotas de Versão
+import { createVersion } from "./routes/create-version";
+
+// Rotas de TesteSessao
+import { createTestSession } from "./routes/create-test-session";
+
+// Rotas de Bug / Feedback
+import { createBug } from "./routes/create-bug";
+import { getAllBugs } from "./routes/get-all-bugs";
+import { getBug } from "./routes/get-bug";
+import { updateBugStatus } from "./routes/update-bug-status";
+import { createBugResponse } from "./routes/create-bug-response";
+
+// Painel
+import { authMiddleware, CRequest } from "./authMiddleware/authenticate";
+import { prisma } from "./lib/prisma";
+
+const app = fastify();
+
+app.register(fastifyCors, {
+    origin: process.env.FRONT_ORIGIN || 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+});
+
+app.register(cookie, {
+    secret: process.env.C_SECRET,
+    hook: 'onRequest',
+});
+
+app.setValidatorCompiler(validatorCompiler);
+app.setSerializerCompiler(serializerCompiler);
+
+// Registro de rotas
+app.register(createUser);
+app.register(login);
+app.register(getUser);
+app.register(getAllUsers);
+
+app.register(createProject);
+app.register(getAllProjects);
+app.register(getProject);
+
+app.register(createVersion);
+
+app.register(createTestSession);
+
+app.register(createBug);
+app.register(getAllBugs);
+app.register(getBug);
+app.register(updateBugStatus);
+app.register(createBugResponse);
+
+// Painel: dados do usuário logado
+app.get('/painel', { preHandler: authMiddleware }, async (request: CRequest, reply) => {
+    const userId = request.user.userId;
+
+    const usuario = await prisma.usuario.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            nome: true,
+            email: true,
+            dataCadastro: true,
+            testador: { select: { id: true, pais: true } },
+            desenvolvedor: { select: { id: true, nomeEstudio: true } },
+            administrador: { select: { id: true, nivelAcesso: true } },
+        }
+    });
+
+    if (usuario === null) {
+        return reply.status(404).send({ message: 'Usuário não encontrado' });
+    }
+
+    let tipo = 'usuario';
+    if (usuario.administrador) tipo = 'administrador';
+    else if (usuario.desenvolvedor) tipo = 'desenvolvedor';
+    else if (usuario.testador) tipo = 'testador';
+
+    return reply.send({ user: { ...usuario, tipo } });
+});
+
+// Health check
+app.get('/health', async () => ({ status: 'ok', service: 'indietest-api' }));
+
+app.listen({
+    host: '0.0.0.0',
+    port: process.env.PORT ? Number(process.env.PORT) : 3333,
+}).then(() => {
+    console.log(`HTTP Server running on port ${process.env.PORT ?? 3333}`);
+});

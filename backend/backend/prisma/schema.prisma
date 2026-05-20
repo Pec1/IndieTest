@@ -1,0 +1,217 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// USUÁRIOS E PAPÉIS (Herança 1:0..1 do DER)
+// ==========================================
+
+model Usuario {
+  id             String               @id @default(uuid())
+  nome           String
+  email          String               @unique
+  senhaHash      String               @map("senha_hash")
+  dataCadastro   DateTime             @default(now()) @map("data_cadastro")
+
+  administrador  Administrador?
+  testador       Testador?
+  desenvolvedor  PerfilDesenvolvedor?
+  notificacoes   Notificacao[]
+
+  @@map("usuario")
+}
+
+model Administrador {
+  id          String  @id @default(uuid()) @map("id_admin")
+  usuarioId   String  @unique @map("id_usuario")
+  nivelAcesso String  @map("nivel_acesso")
+
+  usuario     Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("administrador")
+}
+
+model Testador {
+  id             String        @id @default(uuid()) @map("id_testador")
+  usuarioId      String        @unique @map("id_usuario")
+  dataNascimento DateTime?     @map("data_nascimento")
+  pais           String?
+
+  usuario        Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  convites       Convite[]
+  testeSessoes   TesteSessao[]
+
+  @@map("testador")
+}
+
+model PerfilDesenvolvedor {
+  id          String    @id @default(uuid()) @map("id_perfil_dev")
+  usuarioId   String    @unique @map("id_usuario")
+  nomeEstudio String    @map("nome_estudio")
+  descricao   String?
+  website     String?
+  dataCriacao DateTime  @default(now()) @map("data_criacao")
+
+  usuario     Usuario                 @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  projetos    Projeto[]
+  respostas   RespostaDesenvolvedor[]
+
+  @@map("perfil_desenvolvedor")
+}
+
+// ==========================================
+// CORE DO SISTEMA (Projetos e Versões)
+// ==========================================
+
+model Projeto {
+  id          String   @id @default(uuid()) @map("id_projeto")
+  perfilDevId String   @map("id_perfil_dev")
+  nome        String
+  descricao   String
+  categoria   String
+  dataCriacao DateTime @default(now()) @map("data_criacao")
+  status      String
+
+  desenvolvedor PerfilDesenvolvedor @relation(fields: [perfilDevId], references: [id], onDelete: Cascade)
+  versoes       Versao[]
+  convites      Convite[]
+
+  @@index([perfilDevId])
+  @@index([status])
+  @@map("projeto")
+}
+
+model Versao {
+  id             String   @id @default(uuid()) @map("id_versao")
+  projetoId      String   @map("id_projeto")
+  numeroVersao   String   @map("numero_versao")
+  changelog      String
+  dataPublicacao DateTime @default(now()) @map("data_publicacao")
+  status         String
+
+  projeto      Projeto       @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  testeSessoes TesteSessao[]
+
+  @@index([projetoId])
+  @@map("versao")
+}
+
+// ==========================================
+// FLUXO DE BETA TESTING (Convites e Sessões)
+// ==========================================
+
+model Convite {
+  id             String   @id @default(uuid()) @map("id_convite")
+  projetoId      String   @map("id_projeto")
+  testadorId     String?  @map("id_testador")
+  emailConvidado String   @map("email_convidado")
+  tokenConvite   String   @unique @map("token_convite")
+  dataEnvio      DateTime @default(now()) @map("data_envio")
+  statusConvite  String   @map("status_convite")
+
+  projeto  Projeto   @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  testador Testador? @relation(fields: [testadorId], references: [id], onDelete: SetNull)
+
+  @@index([projetoId])
+  @@index([testadorId])
+  @@map("convite")
+}
+
+model TesteSessao {
+  id                 String    @id @default(uuid()) @map("id_teste")
+  versaoId           String    @map("id_versao")
+  testadorId         String    @map("id_testador")
+  dataInicio         DateTime  @default(now()) @map("data_inicio")
+  dataFim            DateTime? @map("data_fim")
+  dispositivo        String
+  sistemaOperacional String    @map("sistema_operacional")
+  status             String
+
+  versao        Versao        @relation(fields: [versaoId], references: [id], onDelete: Cascade)
+  testador      Testador      @relation(fields: [testadorId], references: [id], onDelete: Cascade)
+  feedbacksBugs FeedbackBug[]
+
+  @@index([versaoId])
+  @@index([testadorId])
+  @@index([status])
+  @@map("teste_sessao")
+}
+
+// ==========================================
+// CAPTURA DE RESULTADOS (Feedbacks, Bugs e Anexos)
+// ==========================================
+
+model FeedbackBug {
+  id            String   @id @default(uuid()) @map("id_feedback")
+  testeSessaoId String   @map("id_teste")
+  titulo        String
+  descricao     String
+  tipo          String
+  severidade    String
+  status        String
+  dataCriacao   DateTime @default(now()) @map("data_criacao")
+
+  testeSessao TesteSessao             @relation(fields: [testeSessaoId], references: [id], onDelete: Cascade)
+  anexos      Anexo[]
+  respostas   RespostaDesenvolvedor[]
+
+  @@index([testeSessaoId])
+  @@index([status])
+  @@index([severidade])
+  @@map("feedback_bug")
+}
+
+model Anexo {
+  id             String   @id @default(uuid()) @map("id_anexo")
+  feedbackBugId  String   @map("id_feedback")
+  nomeArquivo    String   @map("nome_arquivo")
+  caminhoArquivo String   @map("caminho_arquivo")
+  tipoArquivo    String   @map("tipo_arquivo")
+  tamanho        Int
+  dataUpload     DateTime @default(now()) @map("data_upload")
+
+  feedbackBug FeedbackBug @relation(fields: [feedbackBugId], references: [id], onDelete: Cascade)
+
+  @@index([feedbackBugId])
+  @@map("anexo")
+}
+
+model RespostaDesenvolvedor {
+  id              String   @id @default(uuid()) @map("id_resposta")
+  feedbackBugId   String   @map("id_feedback")
+  perfilDevId     String   @map("id_desenvolvedor")
+  mensagem        String
+  dataResposta    DateTime @default(now()) @map("data_resposta")
+  visivelTestador Boolean  @default(true) @map("visivel_para_testador")
+
+  feedbackBug   FeedbackBug         @relation(fields: [feedbackBugId], references: [id], onDelete: Cascade)
+  desenvolvedor PerfilDesenvolvedor @relation(fields: [perfilDevId], references: [id], onDelete: Cascade)
+
+  @@index([feedbackBugId])
+  @@index([perfilDevId])
+  @@map("resposta_desenvolvedor")
+}
+
+// ==========================================
+// NOTIFICAÇÕES
+// ==========================================
+
+model Notificacao {
+  id             String   @id @default(uuid()) @map("id_notificacao")
+  destinatarioId String   @map("id_usuario")
+  tipo           String
+  mensagem       String
+  status         String   @default("pendente")
+  dataCriacao    DateTime @default(now()) @map("data_criacao")
+
+  usuario Usuario @relation(fields: [destinatarioId], references: [id], onDelete: Cascade)
+
+  @@index([destinatarioId])
+  @@index([status])
+  @@map("notificacao")
+}
