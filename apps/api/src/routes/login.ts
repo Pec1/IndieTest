@@ -66,10 +66,8 @@ export async function login(app: FastifyInstance) {
             { expiresIn: '1d' }
         );
 
-        reply.setCookie('accessToken', token, {
-            path: '/',
-            httpOnly: true,
-        });
+        // set cookie via header to avoid missing setCookie type when cookie plugin types aren't available
+        reply.header('Set-Cookie', `accessToken=${token}; Path=/; HttpOnly`);
 
         return reply.status(200).send({
             message: 'Login bem-sucedido',

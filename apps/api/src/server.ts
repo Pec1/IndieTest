@@ -1,6 +1,6 @@
-import { serializerCompiler, validatorCompiler } from "fastify-type-provider-zod";
+import { serializerCompiler, validatorCompiler, ZodTypeProvider } from "fastify-type-provider-zod";
 import { fastify } from "fastify";
-import cookie from '@fastify/cookie';
+import fastifyCookie = require('@fastify/cookie');
 import fastifyCors from '@fastify/cors';
 
 // Rotas de Usuario / Autenticação
@@ -31,7 +31,7 @@ import { createBugResponse } from "./routes/create-bug-response";
 import { authMiddleware, CRequest } from "./authMiddleware/authenticate";
 import { prisma } from "./lib/prisma";
 
-const app = fastify();
+const app = fastify().withTypeProvider<ZodTypeProvider>();
 
 app.register(fastifyCors, {
     origin: process.env.FRONT_ORIGIN || 'http://localhost:5173',
@@ -40,9 +40,9 @@ app.register(fastifyCors, {
     credentials: true,
 });
 
-app.register(cookie, {
+app.register(fastifyCookie, {
     secret: process.env.C_SECRET,
-    hook: 'onRequest',
+    hook: 'onRequest' as const,
 });
 
 app.setValidatorCompiler(validatorCompiler);
