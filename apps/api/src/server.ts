@@ -27,6 +27,14 @@ import { getBug } from "./routes/get-bug";
 import { updateBugStatus } from "./routes/update-bug-status";
 import { createBugResponse } from "./routes/create-bug-response";
 
+// Rotas de Notificações
+import { getNotificacoes } from "./routes/get-notificacoes";
+import { updateNotificacaoLida } from "./routes/update-notificacao-lida";
+
+// Rotas de Convites
+import { getConvites } from "./routes/get-convites";
+import { updateConvite } from "./routes/update-convite";
+
 // Painel
 import { authMiddleware, CRequest } from "./authMiddleware/authenticate";
 import { prisma } from "./lib/prisma";
@@ -71,6 +79,12 @@ app.register(getAllBugs);
 app.register(getBug);
 app.register(updateBugStatus);
 app.register(createBugResponse);
+
+app.register(getNotificacoes);
+app.register(updateNotificacaoLida);
+
+app.register(getConvites);
+app.register(updateConvite);
 
 // Painel: dados do usuário logado
 app.get('/painel', { preHandler: authMiddleware }, async (request: CRequest, reply) => {

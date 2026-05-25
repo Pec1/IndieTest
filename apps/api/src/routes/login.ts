@@ -46,12 +46,12 @@ export async function login(app: FastifyInstance) {
             }
         })
         if (!usuario) {
-            return reply.status(401).send({ message: 'Usuário não encontrado! E-mail ou senha inválidos' })
+            return reply.status(401).send({ message: 'E-mail ou senha inválidos' })
         }
 
         const isValidPassword = await bcrypt.compare(senha, usuario.senhaHash)
         if (!isValidPassword) {
-            return reply.status(401).send({ message: 'Senha inválida' });
+            return reply.status(401).send({ message: 'E-mail ou senha inválidos' });
         }
 
         // Determina o tipo do usuário a partir das relações
@@ -66,8 +66,9 @@ export async function login(app: FastifyInstance) {
             { expiresIn: '1d' }
         );
 
-        // set cookie via header to avoid missing setCookie type when cookie plugin types aren't available
-        reply.header('Set-Cookie', `accessToken=${token}; Path=/; HttpOnly`);
+        const isProduction = process.env.NODE_ENV === 'production';
+        const secureFlag = isProduction ? '; Secure' : '';
+        reply.header('Set-Cookie', `accessToken=${token}; Path=/; HttpOnly; SameSite=Strict${secureFlag}`);
 
         return reply.status(200).send({
             message: 'Login bem-sucedido',

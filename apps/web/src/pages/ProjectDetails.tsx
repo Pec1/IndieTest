@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Crosshair, ArrowLeft, Download, Bug, MessageSquare, Calendar, FileCode, Shield, ChevronDown, Package, AlertCircle, Clock, ExternalLink } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { Link, useNavigate, useParams } from 'react-router';
 import { getProjeto, type Projeto, type Versao } from '../api/projetos';
 import { useAuth } from '../contexts/AuthContext';
-
-function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
+import { cn } from '../lib/utils';
 
 function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;
@@ -47,7 +44,7 @@ export function ProjectDetails() {
   const [projeto, setProjeto] = useState<Projeto | null>(null);
   const [carregando, setCarregando] = useState(true);
 
-  const ehDono = user?.tipo === 'desenvolvedor' && projeto?.desenvolvedor?.usuario?.email === user?.email;
+  const ehDono = user?.tipo === 'desenvolvedor' && projeto?.desenvolvedor?.id === user?.desenvolvedor?.id;
 
   useEffect(() => {
     if (!id) return;

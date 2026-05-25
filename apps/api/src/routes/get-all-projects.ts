@@ -11,33 +11,45 @@ export async function getAllProjects(app: FastifyInstance) {
             querystring: z.object({
                 status: z.string().optional(),
                 categoria: z.string().optional(),
+                page: z.coerce.number().int().min(1).default(1),
+                limit: z.coerce.number().int().min(1).max(100).default(20),
             }),
         }
     }, async (request: CRequest, reply) => {
-        const { status, categoria } = request.query
+        const { status, categoria, page, limit } = request.query
 
-        const projetos = await prisma.projeto.findMany({
-            where: {
-                ...(status && { status }),
-                ...(categoria && { categoria }),
-            },
-            include: {
-                desenvolvedor: {
-                    select: {
-                        nomeEstudio: true,
-                        usuario: { select: { nome: true } }
+        const where = {
+            ...(status && { status }),
+            ...(categoria && { categoria }),
+        }
+
+        const [projetos, total] = await prisma.$transaction([
+            prisma.projeto.findMany({
+                where,
+                include: {
+                    desenvolvedor: {
+                        select: {
+                            nomeEstudio: true,
+                            usuario: { select: { nome: true } }
+                        }
+                    },
+                    _count: {
+                        select: {
+                            versoes: true,
+                            convites: true,
+                        }
                     }
                 },
-                _count: {
-                    select: {
-                        versoes: true,
-                        convites: true,
-                    }
-                }
-            },
-            orderBy: { dataCriacao: 'desc' }
-        })
+                orderBy: { dataCriacao: 'desc' },
+                skip: (page - 1) * limit,
+                take: limit,
+            }),
+            prisma.projeto.count({ where }),
+        ])
 
-        return reply.send({ projetos })
+        return reply.send({
+            projetos,
+            paginacao: { total, pagina: page, limite: limit, paginas: Math.ceil(total / limit) },
+        })
     })
 }

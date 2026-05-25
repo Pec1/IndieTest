@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Crosshair, ArrowLeft, MessageSquare, Star, Filter } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { Link, useNavigate } from 'react-router';
 import { getBugs, type Bug } from '../api/bugs';
-
-function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
+import { cn } from '../lib/utils';
 
 function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;

@@ -1,29 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Crosshair, ArrowLeft, Bell, BellOff, CheckCheck, AlertTriangle, Info, Bug, Mail, Filter } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { Link } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
+import { getNotificacoes, marcarNotificacaoLida, type Notificacao } from '../api/notificacoes';
+import { cn } from '../lib/utils';
 
-function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
-
-function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;
-}
-
-type NotifTipo = 'bug_critico' | 'convite' | 'feedback' | 'sistema' | 'atualizacao';
+type NotifTipo = string;
 type NotifStatus = 'pendente' | 'lida';
 
-interface Notificacao {
-  id: string;
-  tipo: NotifTipo;
-  mensagem: string;
-  status: NotifStatus;
-  dataCriacao: string;
-  meta?: string;
-}
-
-const TIPO_CONFIG: Record<NotifTipo, { icon: React.ElementType; color: string; label: string; bg: string }> = {
+const TIPO_CONFIG: Record<string, { icon: React.ElementType; color: string; label: string; bg: string }> = {
   bug_critico: { icon: Bug, color: 'text-red-400', label: 'BUG_CRÍTICO', bg: 'bg-red-500/10 border-red-500/30' },
   convite: { icon: Mail, color: 'text-[#4A3AFF]', label: 'CONVITE', bg: 'bg-[#4A3AFF]/10 border-[#4A3AFF]/30' },
   feedback: { icon: Info, color: 'text-[#D4FF00]', label: 'FEEDBACK', bg: 'bg-[#D4FF00]/10 border-[#D4FF00]/30' },
@@ -31,8 +16,12 @@ const TIPO_CONFIG: Record<NotifTipo, { icon: React.ElementType; color: string; l
   atualizacao: { icon: CheckCheck, color: 'text-[#10b981]', label: 'ATUALIZAÇÃO', bg: 'bg-[#10b981]/10 border-[#10b981]/30' },
 };
 
+function getTipoConfig(tipo: string) {
+  return TIPO_CONFIG[tipo] ?? { icon: Bell, color: 'text-zinc-400', label: tipo.toUpperCase(), bg: 'bg-zinc-500/10 border-zinc-500/30' };
+}
+
 function NotifCard({ notif, onMarcarLida }: { notif: Notificacao; onMarcarLida: (id: string) => void }) {
-  const { icon: Icon, color, label, bg } = TIPO_CONFIG[notif.tipo];
+  const { icon: Icon, color, label, bg } = getTipoConfig(notif.tipo);
   const isNova = notif.status === 'pendente';
 
   return (
@@ -55,9 +44,6 @@ function NotifCard({ notif, onMarcarLida }: { notif: Notificacao; onMarcarLida: 
             </span>
           </div>
           <p className="font-mono text-xs text-zinc-300 leading-relaxed">{notif.mensagem}</p>
-          {notif.meta && (
-            <p className="font-mono text-[10px] text-zinc-600 mt-1 uppercase">{notif.meta}</p>
-          )}
         </div>
         {isNova && (
           <button type="button" onClick={() => onMarcarLida(notif.id)}
@@ -70,62 +56,41 @@ function NotifCard({ notif, onMarcarLida }: { notif: Notificacao; onMarcarLida: 
   );
 }
 
-const DEMO_NOTIFS: Notificacao[] = [
-  {
-    id: '1',
-    tipo: 'bug_critico',
-    mensagem: 'Um bug CRÍTICO foi reportado no projeto "Projeto Demo". Verifique imediatamente.',
-    status: 'pendente',
-    dataCriacao: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    meta: 'PROJETO: PROJETO DEMO // SEVERIDADE: CRÍTICA',
-  },
-  {
-    id: '2',
-    tipo: 'convite',
-    mensagem: 'Você recebeu um novo convite para testar um projeto. Acesse a Central de Convites para aceitar ou recusar.',
-    status: 'pendente',
-    dataCriacao: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-  },
-  {
-    id: '3',
-    tipo: 'feedback',
-    mensagem: 'Novo feedback recebido: testador reportou 3 bugs em sessão de teste.',
-    status: 'lida',
-    dataCriacao: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    meta: 'SESSÃO: TST-001 // BUGS: 3',
-  },
-  {
-    id: '4',
-    tipo: 'atualizacao',
-    mensagem: 'Bug #042 foi marcado como corrigido pelo desenvolvedor.',
-    status: 'lida',
-    dataCriacao: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-  },
-];
-
 export function Notifications() {
   const { user } = useAuth();
-  const [notificacoes, setNotificacoes] = useState<Notificacao[]>(DEMO_NOTIFS);
-  const [filtroTipo, setFiltroTipo] = useState<NotifTipo | ''>('');
+  const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
+  const [carregando, setCarregando] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState<NotifStatus | ''>('');
 
   const isDev = user?.tipo === 'desenvolvedor';
   const backLink = isDev ? '/dev' : '/dashboard';
 
-  function marcarLida(id: string) {
-    setNotificacoes(prev => prev.map(n => n.id === id ? { ...n, status: 'lida' } : n));
+  const carregar = useCallback(() => {
+    setCarregando(true);
+    getNotificacoes({ limit: 50 })
+      .then(({ notificacoes: n }) => setNotificacoes(n))
+      .catch(console.error)
+      .finally(() => setCarregando(false));
+  }, []);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  async function marcarLida(id: string) {
+    try {
+      await marcarNotificacaoLida(id);
+      setNotificacoes(prev => prev.map(n => n.id === id ? { ...n, status: 'lida' } : n));
+    } catch (e) {
+      console.error(e);
+    }
   }
 
-  function marcarTodasLidas() {
-    setNotificacoes(prev => prev.map(n => ({ ...n, status: 'lida' })));
+  async function marcarTodasLidas() {
+    const pendentes = notificacoes.filter(n => n.status === 'pendente');
+    await Promise.allSettled(pendentes.map(n => marcarNotificacaoLida(n.id)));
+    setNotificacoes(prev => prev.map(n => ({ ...n, status: 'lida' as const })));
   }
 
-  const filtradas = notificacoes.filter(n => {
-    if (filtroTipo && n.tipo !== filtroTipo) return false;
-    if (filtroStatus && n.status !== filtroStatus) return false;
-    return true;
-  });
-
+  const filtradas = notificacoes.filter(n => !filtroStatus || n.status === filtroStatus);
   const pendentes = notificacoes.filter(n => n.status === 'pendente').length;
 
   return (
@@ -177,30 +142,27 @@ export function Notifications() {
           <div className="flex items-center gap-2 font-mono text-xs text-zinc-500">
             <Filter size={14} /> FILTROS:
           </div>
-          <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value as NotifTipo | '')}
-            className="bg-[#1C1D22] border border-[#2C2D35] text-white py-2 px-4 font-mono text-xs outline-none focus:border-[#D4FF00] appearance-none cursor-pointer">
-            <option value="">TODOS OS TIPOS</option>
-            {(Object.keys(TIPO_CONFIG) as NotifTipo[]).map(t => (
-              <option key={t} value={t} className="bg-[#1C1D22]">{TIPO_CONFIG[t].label}</option>
-            ))}
-          </select>
           <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value as NotifStatus | '')}
             className="bg-[#1C1D22] border border-[#2C2D35] text-white py-2 px-4 font-mono text-xs outline-none focus:border-[#D4FF00] appearance-none cursor-pointer">
             <option value="">TODOS OS STATUS</option>
             <option value="pendente" className="bg-[#1C1D22]">NÃO LIDAS</option>
             <option value="lida" className="bg-[#1C1D22]">LIDAS</option>
           </select>
-          <TechnicalLabel>{filtradas.length} REGISTROS</TechnicalLabel>
+          <span className="font-mono text-[10px] text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20">{filtradas.length} REGISTROS</span>
         </div>
 
-        {filtradas.length === 0 ? (
+        {carregando ? (
+          <div className="flex items-center justify-center py-24">
+            <p className="font-mono text-[#D4FF00] animate-pulse tracking-widest">CARREGANDO_NOTIFICAÇÕES...</p>
+          </div>
+        ) : filtradas.length === 0 ? (
           <div className="border border-[#2C2D35] bg-[#1C1D22] p-16 text-center">
             <BellOff size={48} className="text-zinc-700 mx-auto mb-4" />
             <p className="font-mono text-sm text-zinc-500 uppercase">[NENHUMA_NOTIFICAÇÃO_ENCONTRADA]</p>
             <p className="font-mono text-xs text-zinc-600 mt-2 max-w-md mx-auto">
-              {filtroTipo || filtroStatus
-                ? 'Nenhuma notificação corresponde aos filtros selecionados.'
-                : 'Você não possui notificações no momento. Elas aparecerão aqui quando houver atividade relevante.'}
+              {filtroStatus
+                ? 'Nenhuma notificação corresponde ao filtro selecionado.'
+                : 'Você não possui notificações no momento.'}
             </p>
           </div>
         ) : (
@@ -210,7 +172,7 @@ export function Notifications() {
                 <div className="flex items-center gap-2 border-b border-[#2C2D35] pb-2 mb-3">
                   <Bell size={16} className="text-[#D4FF00]" />
                   <h2 className="font-display font-black text-sm text-white uppercase tracking-widest">NÃO LIDAS</h2>
-                  <TechnicalLabel>{filtradas.filter(n => n.status === 'pendente').length}</TechnicalLabel>
+                  <span className="font-mono text-[10px] text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20">{filtradas.filter(n => n.status === 'pendente').length}</span>
                 </div>
                 <div className="space-y-2">
                   {filtradas.filter(n => n.status === 'pendente').map(n => (
@@ -241,7 +203,7 @@ export function Notifications() {
             <div>
               <span className="font-display font-bold text-sm text-white tracking-wide uppercase">Sobre Notificações</span>
               <p className="font-mono text-[10px] text-zinc-400 mt-1 uppercase leading-relaxed">
-                Notificações são geradas automaticamente pelo sistema com base nas atividades dos seus projetos e sessões de teste. O módulo de notificações em tempo real está em desenvolvimento.
+                Notificações são geradas pelo sistema com base nas atividades dos seus projetos e sessões de teste.
               </p>
             </div>
           </div>

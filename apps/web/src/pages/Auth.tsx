@@ -4,10 +4,7 @@ import { useNavigate, Navigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { criarUsuario } from '../api/auth';
 import { ApiError } from '../api/client';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
+import { cn } from '../lib/utils';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;

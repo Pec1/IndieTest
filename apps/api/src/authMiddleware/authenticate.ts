@@ -1,19 +1,32 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { verify } from 'jsonwebtoken';
 
+export interface JwtPayload {
+    userId: string;
+    tipo: string;
+    iat: number;
+    exp: number;
+}
+
+// Torna user disponível em FastifyRequest para que preHandler e handlers sejam compatíveis
+declare module 'fastify' {
+    interface FastifyRequest {
+        user: JwtPayload;
+    }
+}
+
+// CRequest mantido como alias para uso nos handlers de rota
 export interface CRequest extends FastifyRequest {
-    user?: any;
-    // Permite acesso direto a body/params/query — a validação é feita pelo Zod no schema
     body: any;
     params: any;
     query: any;
 }
 
-export async function authMiddleware(request: CRequest, reply: FastifyReply) {
+export async function authMiddleware(request: FastifyRequest, reply: FastifyReply) {
 
     const jwtSecret = process.env.JWT_SECRET
     if (!jwtSecret) {
-        throw new Error('JWT secret is not defined')
+        throw new Error('JWT secret é obrigatório')
     }
 
     // Aceita token via cookie (accessToken) ou Authorization header (Bearer)
@@ -33,7 +46,7 @@ export async function authMiddleware(request: CRequest, reply: FastifyReply) {
     }
 
     try {
-        const decodedToken = verify(token, jwtSecret);
+        const decodedToken = verify(token, jwtSecret) as JwtPayload;
         request.user = decodedToken;
         return;
     } catch {

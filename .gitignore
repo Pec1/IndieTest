@@ -1,0 +1,19 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente (NUNCA commitar)
+.env
+.env.*
+!.env.example
+
+# Builds e dist
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporários do editor
+.DS_Store
+.vscode/settings.json

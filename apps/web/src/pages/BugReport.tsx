@@ -1,15 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Crosshair, ArrowLeft, Send, ShieldAlert, FileWarning, AlertTriangle, X, UploadCloud, Image as ImageIcon, Terminal } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { Link, useNavigate } from 'react-router';
 import { criarBug } from '../api/bugs';
 import { getProjetos, getProjeto } from '../api/projetos';
 import { criarSessao } from '../api/sessoes';
 import type { Projeto, Versao } from '../api/projetos';
 import { ApiError } from '../api/client';
-
-function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
+import { cn } from '../lib/utils';
 
 function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;

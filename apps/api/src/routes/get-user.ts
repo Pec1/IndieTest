@@ -2,10 +2,11 @@ import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import z from "zod"
 import { prisma } from "../lib/prisma"
-import { CRequest } from "../authMiddleware/authenticate"
+import { authMiddleware, CRequest } from "../authMiddleware/authenticate"
 
 export async function getUser(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().get('/users/:id', {
+        preHandler: authMiddleware,
         schema: {
             params: z.object({
                 id: z.string().uuid(),
@@ -54,11 +55,6 @@ export async function getUser(app: FastifyInstance) {
         else if (usuario.desenvolvedor) tipo = 'desenvolvedor'
         else if (usuario.testador) tipo = 'testador'
 
-        return reply.send({
-            user: {
-                ...usuario,
-                tipo,
-            }
-        })
+        return reply.send({ user: { ...usuario, tipo } })
     })
 }

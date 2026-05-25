@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Terminal, Activity, Crosshair, ArrowUpRight, BarChart2, PlusSquare, Disc, Settings, Bell } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { getProjetos, type Projeto } from '../api/projetos';
-
-function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
+import { cn } from '../lib/utils';
 
 function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
