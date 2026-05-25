@@ -32,6 +32,7 @@ import { getNotificacoes } from "./routes/get-notificacoes";
 import { updateNotificacaoLida } from "./routes/update-notificacao-lida";
 
 // Rotas de Convites
+import { createConvite } from "./routes/create-convite";
 import { getConvites } from "./routes/get-convites";
 import { updateConvite } from "./routes/update-convite";
 
@@ -83,6 +84,7 @@ app.register(createBugResponse);
 app.register(getNotificacoes);
 app.register(updateNotificacaoLida);
 
+app.register(createConvite);
 app.register(getConvites);
 app.register(updateConvite);
 

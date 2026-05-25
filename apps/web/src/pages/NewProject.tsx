@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Crosshair, ArrowLeft, Save, Plus, Terminal, Shield, FileText, CheckSquare, X, UploadCloud, FileArchive, CheckCircle2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { criarProjeto, criarVersao } from '../api/projetos';
+import { convidarTestador } from '../api/convites';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
 
@@ -49,6 +50,7 @@ export function NewProject() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragActive, setIsDragActive] = useState(false);
   const [erro, setErro] = useState('');
+  const [avisoConvites, setAvisoConvites] = useState('');
   const [salvando, setSalvando] = useState(false);
 
   function handleAddTester() {
@@ -72,11 +74,30 @@ export function NewProject() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErro('');
+    setAvisoConvites('');
     setSalvando(true);
     try {
       const { projeto } = await criarProjeto({ nome, descricao, categoria });
       if (versaoNum.trim()) {
         await criarVersao(projeto.id, { numeroVersao: versaoNum, changelog: changelog || 'Versão inicial' });
+      }
+      if (testers.length > 0) {
+        const resultados = await Promise.allSettled(
+          testers.map(email => convidarTestador(projeto.id, email))
+        );
+        const falhas = resultados
+          .map((r, i) => ({ r, email: testers[i] }))
+          .filter(({ r }) => r.status === 'rejected')
+          .map(({ email, r }) => {
+            const msg = r.status === 'rejected' && r.reason instanceof ApiError ? r.reason.message : 'Erro desconhecido';
+            return `${email}: ${msg}`;
+          });
+        if (falhas.length > 0) {
+          setAvisoConvites(`${testers.length - falhas.length}/${testers.length} convites enviados. Falhas:\n${falhas.join('\n')}`);
+          setSalvando(false);
+          setTimeout(() => navigate('/dev'), 3000);
+          return;
+        }
       }
       navigate('/dev');
     } catch (e) {
@@ -109,6 +130,11 @@ export function NewProject() {
           <p className="font-mono text-xs text-zinc-500 mt-2">PREENCHIMENTO DE DADOS EXIGIDO. PROTOCOLO SYS_CONFIG_001.</p>
         </div>
         {erro && <div className="mb-6 bg-red-500/10 border border-red-500/30 p-4 font-mono text-xs text-red-400">{erro}</div>}
+        {avisoConvites && (
+          <div className="mb-6 bg-[#D4FF00]/10 border border-[#D4FF00]/30 p-4 font-mono text-xs text-[#D4FF00] whitespace-pre-line">
+            PROJETO_CRIADO. {avisoConvites}{'\n'}Redirecionando...
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-0">
           <div className="bg-[#1C1D22] border border-[#2C2D35] p-6 sm:p-8">
             <SectionHeader title="DADOS DO SOFTWARE" code="RF03/RF04" icon={Terminal} />

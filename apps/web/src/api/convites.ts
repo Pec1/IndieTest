@@ -23,6 +23,16 @@ export async function getConvites(params?: {
   return api(`/convites${qs}`);
 }
 
+export async function convidarTestador(
+  projetoId: string,
+  emailConvidado: string
+): Promise<{ message: string; convite: Convite }> {
+  return api('/convites', {
+    method: 'POST',
+    body: JSON.stringify({ projetoId, emailConvidado }),
+  });
+}
+
 export async function responderConvite(
   id: string,
   acao: 'aceitar' | 'recusar'
