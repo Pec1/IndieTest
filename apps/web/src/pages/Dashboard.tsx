@@ -50,8 +50,19 @@ function StructuralHeader() {
           <Settings size={20} className="text-zinc-500 group-hover:text-[#D4FF00] transition-colors" strokeWidth={1.5} />
         </Link>
       </AppHeader.InfoBar>
-      <AppHeader.Actions className="px-6 bg-[#4A3AFF] hover:bg-[#382bd6] transition-colors">
-        <button onClick={handleSignOut} className="font-display font-bold text-white tracking-widest uppercase text-sm w-full h-full flex items-center justify-center">
+      <AppHeader.Actions className="px-0 overflow-hidden">
+        {user?.tipo === 'desenvolvedor' && (
+          <Link
+            to="/dev"
+            className="font-display font-bold text-black tracking-widest uppercase text-sm h-full flex items-center justify-center px-5 bg-[#D4FF00] hover:bg-[#b8e600] transition-colors border-r border-[#2C2D35]"
+          >
+            ÁREA DEV
+          </Link>
+        )}
+        <button
+          onClick={handleSignOut}
+          className="font-display font-bold text-white tracking-widest uppercase text-sm h-full flex items-center justify-center px-5 bg-[#4A3AFF] hover:bg-[#382bd6] transition-colors"
+        >
           SAIR // LOGOUT
         </button>
       </AppHeader.Actions>
