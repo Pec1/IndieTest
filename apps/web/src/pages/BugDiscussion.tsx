@@ -1,29 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Crosshair, ArrowLeft, AlertTriangle, FileWarning, MessageSquare, Send, Shield, User, Calendar, Terminal, Image as ImageIcon, ChevronDown } from 'lucide-react';
+import { ArrowLeft, FileWarning, MessageSquare, Send, Shield, Calendar, Terminal, Image as ImageIcon, ChevronDown } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { getBug, atualizarStatusBug, criarRespostaBug, type Bug } from '../api/bugs';
 import { useAuth } from '../contexts/AuthContext';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
-
-function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;
-}
-
-function SeverityBadge({ severity }: { severity: string }) {
-  const colors: Record<string, string> = {
-    Critica: 'bg-red-500/10 text-red-500 border-red-500',
-    Alta: 'bg-orange-500/10 text-orange-500 border-orange-500',
-    Media: 'bg-[#D4FF00]/10 text-[#D4FF00] border-[#D4FF00]',
-    Baixa: 'bg-zinc-500/10 text-zinc-500 border-zinc-500',
-  };
-  const labels: Record<string, string> = { Critica: 'CRÍTICA', Alta: 'ALTA', Media: 'MÉDIA', Baixa: 'BAIXA' };
-  return (
-    <div className={cn("font-display font-black text-lg uppercase px-4 py-2 border-2 inline-flex items-center gap-2", colors[severity] || 'border-zinc-500 text-zinc-500')}>
-      <AlertTriangle size={20} strokeWidth={2.5} /> SEVERIDADE: {labels[severity] || severity}
-    </div>
-  );
-}
+import { TechnicalLabel } from '../components/ui/TechnicalLabel';
+import { AppHeader } from '../components/ui/AppHeader';
+import { SeverityBadge } from '../components/shared/SeverityBadge';
 
 function UserBadge({ tipo }: { tipo: string }) {
   const colors: Record<string, string> = {
@@ -110,21 +94,14 @@ export function BugDiscussion() {
 
   return (
     <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
-      <header className="flex flex-col md:flex-row items-stretch border-b border-[#2C2D35] bg-[#0F1013] sticky top-0 z-40">
-        <div className="flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35]">
-          <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
-          <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
-        </div>
-        <div className="flex-1 flex overflow-x-auto no-scrollbar items-center px-4 md:px-6 justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/bug-tracker" className="flex items-center gap-2 font-mono text-xs text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-[#2C2D35] p-2 bg-[#1C1D22]">
-              <ArrowLeft size={16} /> VOLTAR_TRACKER
-            </Link>
-            <div className="h-4 w-px bg-[#2C2D35]" />
-            <span className="font-mono text-xs text-[#D4FF00] font-bold tracking-widest">BUG_DISCUSSION // RF15</span>
-          </div>
-        </div>
-      </header>
+      <AppHeader>
+        <AppHeader.Brand />
+        <AppHeader.Nav>
+          <AppHeader.NavBack to="/bug-tracker"><ArrowLeft size={16} /> VOLTAR_TRACKER</AppHeader.NavBack>
+          <AppHeader.NavDivider />
+          <AppHeader.NavLabel>BUG_DISCUSSION // RF15</AppHeader.NavLabel>
+        </AppHeader.Nav>
+      </AppHeader>
       <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
@@ -144,7 +121,7 @@ export function BugDiscussion() {
                 </div>
               </div>
               <h2 className="font-display font-black text-3xl text-white uppercase tracking-tight mb-4">{bug.titulo}</h2>
-              <SeverityBadge severity={bug.severidade} />
+              <SeverityBadge severity={bug.severidade} size="lg" />
             </div>
             <div className="bg-[#1C1D22] border border-[#2C2D35]">
               <div className="border-b border-[#2C2D35] p-4 bg-[#0F1013] flex items-center justify-between">

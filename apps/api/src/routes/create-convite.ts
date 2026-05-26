@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import { z } from "zod"
 import { prisma } from "../lib/prisma"
-import { authMiddleware, CRequest } from "../authMiddleware/authenticate"
+import { authMiddleware, CRequest } from "../middleware/authenticate"
 import crypto from "node:crypto"
 
 export async function createConvite(app: FastifyInstance) {

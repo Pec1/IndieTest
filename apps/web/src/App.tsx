@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { AuthProvider } from './contexts/AuthContext';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { ErrorBoundary } from './components/routing/ErrorBoundary';
+import { ProtectedRoute } from './components/routing/ProtectedRoute';
 import { Auth } from './pages/Auth';
 import { Dashboard } from './pages/Dashboard';
 import { DevDashboard } from './pages/DevDashboard';
@@ -18,6 +19,7 @@ import { Notifications } from './pages/Notifications';
 
 export function App() {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <BrowserRouter>
         <Routes>
@@ -39,5 +41,6 @@ export function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }

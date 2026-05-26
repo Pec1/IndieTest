@@ -3,7 +3,7 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma"
 import { FastifyInstance } from "fastify"
 import bcrypt from "bcryptjs"
-import { CRequest } from "../authMiddleware/authenticate"
+import { CRequest } from "../middleware/authenticate"
 
 export async function createUser(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().post('/users', {

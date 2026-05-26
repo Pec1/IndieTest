@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import { z } from "zod"
 import { prisma } from "../lib/prisma"
-import { authMiddleware, CRequest } from "../authMiddleware/authenticate"
+import { authMiddleware, CRequest } from "../middleware/authenticate"
 
 export async function updateConvite(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().patch('/convites/:id', {
@@ -59,6 +59,27 @@ export async function updateConvite(app: FastifyInstance) {
                 ...(testadorId && { testadorId }),
             },
         })
+
+        // Notifica o desenvolvedor sobre a resposta ao convite
+        const conviteComProjeto = await prisma.convite.findUnique({
+            where: { id },
+            include: {
+                projeto: {
+                    include: { desenvolvedor: { select: { usuarioId: true } } }
+                }
+            }
+        })
+        if (conviteComProjeto?.projeto?.desenvolvedor) {
+            const acaoLabel = acao === 'aceitar' ? 'aceitou' : 'recusou'
+            await prisma.notificacao.create({
+                data: {
+                    destinatarioId: conviteComProjeto.projeto.desenvolvedor.usuarioId,
+                    tipo: 'convite',
+                    mensagem: `${usuario.email} ${acaoLabel} o convite para o projeto "${conviteComProjeto.projeto.nome}"`,
+                    status: 'pendente',
+                },
+            })
+        }
 
         return reply.send({
             message: acao === 'aceitar' ? 'Convite aceito com sucesso' : 'Convite recusado',

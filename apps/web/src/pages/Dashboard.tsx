@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Terminal, Activity, Crosshair, ArrowUpRight, BarChart2, PlusSquare, Disc, Settings, Bell } from 'lucide-react';
+import { Terminal, Activity, ArrowUpRight, BarChart2, PlusSquare, Disc, Settings, Bell } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { getProjetos, type Projeto } from '../api/projetos';
+import { getAtividades, type Atividade } from '../api/atividades';
 import { cn } from '../lib/utils';
-
-function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>
-      {children}
-    </div>
-  );
-}
+import { TechnicalLabel } from '../components/ui/TechnicalLabel';
+import { AppHeader } from '../components/ui/AppHeader';
 
 function ZapIcon() {
   return (
@@ -31,42 +26,36 @@ function StructuralHeader() {
   }
 
   return (
-    <header className="flex flex-col md:flex-row items-stretch border-b border-[#2C2D35] bg-[#0F1013] sticky top-0 z-40">
-      <div className="flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDBoMnYySDB6IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIi8+PC9zdmc+')]">
-        <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
-        <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
-      </div>
-      <div className="flex-1 flex overflow-x-auto no-scrollbar">
-        <div className="flex flex-col justify-center px-6 border-r border-[#2C2D35] min-w-max">
-          <span className="text-[10px] text-zinc-500 font-mono mb-1">ID_USUÁRIO</span>
-          <span className="font-mono text-white text-sm">{user?.id?.slice(0, 8).toUpperCase() || 'USR-????'}</span>
-        </div>
-        <div className="flex flex-col justify-center px-6 border-r border-[#2C2D35] min-w-max">
-          <span className="text-[10px] text-zinc-500 font-mono mb-1">PERFIL</span>
+    <AppHeader>
+      <AppHeader.Brand className="bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDBoMnYySDB6IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIi8+PC9zdmc+')]" />
+      <AppHeader.InfoBar>
+        <AppHeader.InfoCell label="ID_USUÁRIO">
+          <span className="text-white">{user?.id?.slice(0, 8).toUpperCase() || 'USR-????'}</span>
+        </AppHeader.InfoCell>
+        <AppHeader.InfoCell label="PERFIL">
           <span className="font-mono text-[#4A3AFF] font-bold text-sm bg-[#4A3AFF]/10 px-2 py-0.5 border border-[#4A3AFF]/30">
             [{user?.tipo?.toUpperCase() || 'TESTADOR'}]
           </span>
-        </div>
-        <div className="flex flex-col justify-center px-6 border-r border-[#2C2D35] min-w-max">
-          <span className="text-[10px] text-zinc-500 font-mono mb-1">REDE GLOBAL</span>
+        </AppHeader.InfoCell>
+        <AppHeader.InfoCell label="REDE GLOBAL">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-[#D4FF00] animate-pulse" />
             <span className="font-mono text-[#D4FF00] font-bold text-sm tracking-wider">SYS.ONLINE</span>
           </div>
-        </div>
+        </AppHeader.InfoCell>
         <Link to="/notificacoes" className="flex items-center justify-center px-4 hover:bg-[#1C1D22] transition-colors border-r border-[#2C2D35] group" title="Notificações">
           <Bell size={20} className="text-zinc-500 group-hover:text-[#D4FF00] transition-colors" strokeWidth={1.5} />
         </Link>
         <Link to="/settings" className="flex items-center justify-center px-4 hover:bg-[#1C1D22] transition-colors border-r border-[#2C2D35] group" title="Configurações">
           <Settings size={20} className="text-zinc-500 group-hover:text-[#D4FF00] transition-colors" strokeWidth={1.5} />
         </Link>
-      </div>
-      <div className="hidden lg:flex items-center justify-center px-6 bg-[#4A3AFF] hover:bg-[#382bd6] transition-colors border-l border-[#2C2D35]">
+      </AppHeader.InfoBar>
+      <AppHeader.Actions className="px-6 bg-[#4A3AFF] hover:bg-[#382bd6] transition-colors">
         <button onClick={handleSignOut} className="font-display font-bold text-white tracking-widest uppercase text-sm w-full h-full flex items-center justify-center">
           SAIR // LOGOUT
         </button>
-      </div>
-    </header>
+      </AppHeader.Actions>
+    </AppHeader>
   );
 }
 
@@ -179,38 +168,38 @@ function ActiveTerminal({ projetos }: { projetos: Projeto[] }) {
   );
 }
 
-function DataIngestionFeed({ projetos }: { projetos: Projeto[] }) {
-  const logs = [
-    { id: 1, type: 'SISTEMA', text: 'Conexão estabelecida com o servidor', time: new Date().toLocaleTimeString('pt-BR', { hour12: false }) },
-    ...projetos.slice(0, 4).map((p, i) => ({
-      id: i + 2, type: 'N_REGISTRO', text: `Projeto [${p.nome}] carregado`, time: new Date().toLocaleTimeString('pt-BR', { hour12: false })
-    }))
-  ];
+function DataIngestionFeed() {
+  const [atividades, setAtividades] = useState<Atividade[]>([]);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    getAtividades()
+      .then(({ atividades: a }) => setAtividades(a))
+      .catch(console.error)
+      .finally(() => setCarregando(false));
+  }, []);
+
   return (
     <aside className="w-full xl:w-96 flex-shrink-0 flex flex-col h-[600px] xl:h-[calc(100vh-80px)] sticky top-20 border-l border-[#2C2D35] bg-[#0F1013]">
       <div className="p-4 border-b border-[#2C2D35] bg-[#1C1D22]">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-display font-black tracking-tight text-white uppercase">LOG_DE_INGESTÃO</h2>
+          <h2 className="text-lg font-display font-black tracking-tight text-white uppercase">LOG_DE_ATIVIDADE</h2>
           <TechnicalLabel className="text-[#4A3AFF] bg-[#4A3AFF]/10 border-[#4A3AFF]/20">RF12</TechnicalLabel>
         </div>
-        <p className="font-mono text-[10px] text-zinc-500">MONITORAMENTO DE REDE EM TEMPO REAL</p>
+        <p className="font-mono text-[10px] text-zinc-500">EVENTOS RECENTES DA PLATAFORMA</p>
       </div>
       <div className="flex-1 overflow-y-auto p-4 font-mono text-xs space-y-2 no-scrollbar">
-        {logs.map((log) => {
-          let colorClass = "text-[#D4FF00]";
-          if (log.type === 'ALERTA') colorClass = "text-red-500";
-          if (log.type === 'SISTEMA') colorClass = "text-zinc-400";
-          if (log.type === 'CONVITE') colorClass = "text-[#4A3AFF]";
-          return (
-            <div key={log.id} className="group hover:bg-[#1C1D22] p-1 -mx-1 transition-colors border-l-2 border-transparent hover:border-[#D4FF00] flex gap-3">
-              <span className="text-zinc-600 shrink-0 select-none">[{log.time}]</span>
-              <div>
-                <span className={cn("font-bold mr-2", colorClass)}>{log.type}:</span>
-                <span className="text-zinc-300">{log.text}</span>
-              </div>
+        {carregando && <p className="text-zinc-500 animate-pulse">CARREGANDO...</p>}
+        {!carregando && atividades.length === 0 && <p className="text-zinc-600">[SEM_ATIVIDADE_RECENTE]</p>}
+        {atividades.map((a, i) => (
+          <div key={i} className="group hover:bg-[#1C1D22] p-1 -mx-1 transition-colors border-l-2 border-transparent hover:border-[#D4FF00] flex gap-3">
+            <span className="text-zinc-600 shrink-0 select-none">[{new Date(a.data).toLocaleTimeString('pt-BR', { hour12: false })}]</span>
+            <div>
+              <span className="font-bold mr-2" style={{ color: a.cor }}>{a.tipo.toUpperCase()}:</span>
+              <span className="text-zinc-300">{a.texto}</span>
             </div>
-          );
-        })}
+          </div>
+        ))}
         <div className="flex gap-3 mt-4">
           <span className="text-zinc-600">[{new Date().toLocaleTimeString('pt-BR', { hour12: false })}]</span>
           <span className="w-2 h-4 bg-[#D4FF00] animate-pulse inline-block" />
@@ -218,12 +207,8 @@ function DataIngestionFeed({ projetos }: { projetos: Projeto[] }) {
       </div>
       <div className="p-4 border-t border-[#2C2D35] bg-[#1C1D22]">
         <div className="flex items-center gap-4">
-          <Link to="/start-session" className="flex-1 font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#D4FF00] text-black hover:bg-[#e2ff4d] transition-all text-xs flex items-center justify-center gap-2">
-            INICIAR_SESSÃO
-          </Link>
-          <Link to="/convites" className="flex-1 font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#1C1D22] border border-[#2C2D35] text-white hover:border-[#4A3AFF] transition-all text-xs flex items-center justify-center gap-2">
-            CONVITES
-          </Link>
+          <Link to="/start-session" className="flex-1 font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#D4FF00] text-black hover:bg-[#e2ff4d] transition-all text-xs flex items-center justify-center gap-2">INICIAR_SESSÃO</Link>
+          <Link to="/convites" className="flex-1 font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#1C1D22] border border-[#2C2D35] text-white hover:border-[#4A3AFF] transition-all text-xs flex items-center justify-center gap-2">CONVITES</Link>
         </div>
       </div>
     </aside>
@@ -257,7 +242,7 @@ export function Dashboard() {
             </>
           )}
         </div>
-        <DataIngestionFeed projetos={projetos} />
+        <DataIngestionFeed />
       </main>
     </div>
   );

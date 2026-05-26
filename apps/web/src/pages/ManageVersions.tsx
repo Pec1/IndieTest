@@ -1,45 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Crosshair, ArrowLeft, Plus, ChevronDown, Clock, FileCode, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Plus, CheckCircle2, FileCode } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { getProjeto, criarVersao, type Projeto, type Versao } from '../api/projetos';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
-
-function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;
-}
-
-function VersionCard({ versao, isLatest }: { versao: Versao; isLatest: boolean }) {
-  const [isExpanded, setIsExpanded] = useState(isLatest);
-  return (
-    <div className={cn("border-2 transition-colors", isLatest ? "border-[#D4FF00] bg-[#1C1D22]" : "border-[#2C2D35] bg-[#1C1D22] hover:border-[#4A3AFF]")}>
-      <button type="button" onClick={() => setIsExpanded(!isExpanded)} className="w-full p-4 flex items-center justify-between hover:bg-[#25262c] transition-colors">
-        <div className="flex items-center gap-4">
-          <div className={cn("font-display font-black text-2xl tracking-tighter", isLatest ? "text-[#D4FF00]" : "text-white")}>{versao.numeroVersao}</div>
-          {isLatest && <TechnicalLabel className="text-[#D4FF00] bg-[#D4FF00]/10 border-[#D4FF00]/30">ATUAL</TechnicalLabel>}
-          <span className={cn("font-mono text-[10px] px-2 py-0.5 border",
-            versao.status === 'ativa' ? "text-[#10b981] border-[#10b981] bg-[#10b981]/10" : "text-zinc-500 border-zinc-500")}>
-            {versao.status.toUpperCase()}
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="font-mono text-xs text-zinc-500 flex items-center gap-2">
-            <Clock size={14} />{new Date(versao.dataPublicacao).toLocaleDateString('pt-BR')}
-          </div>
-          <ChevronDown size={20} className={cn("text-zinc-500 transition-transform", isExpanded && "rotate-180")} />
-        </div>
-      </button>
-      {isExpanded && (
-        <div className="border-t border-[#2C2D35] p-4 bg-[#0F1013]">
-          <div className="font-mono text-[10px] text-zinc-500 uppercase mb-3 flex items-center gap-2">
-            <FileCode size={14} /> CHANGELOG
-          </div>
-          <pre className="font-mono text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap">{versao.changelog}</pre>
-        </div>
-      )}
-    </div>
-  );
-}
+import { TechnicalLabel } from '../components/ui/TechnicalLabel';
+import { AppHeader } from '../components/ui/AppHeader';
+import { VersionCard } from '../components/shared/VersionCard';
 
 export function ManageVersions() {
   const { id } = useParams<{ id: string }>();
@@ -97,25 +64,20 @@ export function ManageVersions() {
 
   return (
     <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
-      <header className="flex flex-col md:flex-row items-stretch border-b border-[#2C2D35] bg-[#0F1013] sticky top-0 z-40">
-        <div className="flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35]">
-          <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
-          <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
-        </div>
-        <div className="flex-1 flex overflow-x-auto no-scrollbar items-center px-4 md:px-6 justify-between">
+      <AppHeader>
+        <AppHeader.Brand />
+        <AppHeader.Nav className="justify-between">
           <div className="flex items-center gap-4">
-            <Link to={`/project/${id}`} className="flex items-center gap-2 font-mono text-xs text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-[#2C2D35] p-2 bg-[#1C1D22]">
-              <ArrowLeft size={16} /> VOLTAR_AO_PROJETO
-            </Link>
-            <div className="h-4 w-px bg-[#2C2D35]" />
-            <span className="font-mono text-xs text-[#D4FF00] font-bold tracking-widest">GERENCIAR_VERSÕES // RF05</span>
+            <AppHeader.NavBack to={`/project/${id}`}><ArrowLeft size={16} /> VOLTAR_AO_PROJETO</AppHeader.NavBack>
+            <AppHeader.NavDivider />
+            <AppHeader.NavLabel>GERENCIAR_VERSÕES // RF05</AppHeader.NavLabel>
           </div>
           <button type="button" onClick={() => setShowForm(!showForm)}
             className="font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#D4FF00] text-black hover:bg-[#e2ff4d] transition-all text-xs flex items-center gap-2 shadow-[2px_2px_0_0_#4A3AFF]">
             <Plus size={16} strokeWidth={2} /> NOVA_VERSÃO
           </button>
-        </div>
-      </header>
+        </AppHeader.Nav>
+      </AppHeader>
       <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-8">
         <div className="mb-8">
           <h1 className="text-5xl font-display font-black uppercase tracking-tighter">
@@ -194,7 +156,7 @@ export function ManageVersions() {
           </div>
         ) : (
           <div className="space-y-3">
-            {versoes.map((v, i) => <VersionCard key={v.id} versao={v} isLatest={i === 0} />)}
+            {versoes.map((v, i) => <VersionCard key={v.id} versao={v} isLatest={i === 0} showStatus />)}
           </div>
         )}
       </main>

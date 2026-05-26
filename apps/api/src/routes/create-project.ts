@@ -2,7 +2,7 @@ import { ZodTypeProvider } from "fastify-type-provider-zod"
 import { z } from "zod"
 import { prisma } from "../lib/prisma"
 import { FastifyInstance } from "fastify"
-import { authMiddleware, CRequest } from "../authMiddleware/authenticate"
+import { authMiddleware, CRequest } from "../middleware/authenticate"
 
 export async function createProject(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().post('/projetos', {

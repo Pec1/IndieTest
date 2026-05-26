@@ -3,21 +3,9 @@ import { Crosshair, ArrowLeft, User, Shield, Bell, Lock, Mail, Phone, AlertTrian
 import { Link } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
-
-function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;
-}
-
-function SectionHeader({ title, code, icon: Icon }: { title: string; code: string; icon: React.ElementType }) {
-  return (
-    <div className="flex items-center justify-between border-b border-[#2C2D35] pb-3 mb-6">
-      <h2 className="text-xl font-display font-black tracking-tight text-white uppercase flex items-center gap-2">
-        <Icon className="text-[#4A3AFF]" size={20} strokeWidth={2} /> {title}
-      </h2>
-      <TechnicalLabel className="text-[#4A3AFF] bg-[#4A3AFF]/10 border-[#4A3AFF]/30">{code}</TechnicalLabel>
-    </div>
-  );
-}
+import { TechnicalLabel } from '../components/ui/TechnicalLabel';
+import { SectionHeader } from '../components/ui/SectionHeader';
+import { AppHeader } from '../components/ui/AppHeader';
 
 function ReadonlyField({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) {
   return (
@@ -78,21 +66,14 @@ export function Settings() {
 
   return (
     <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
-      <header className="flex flex-col md:flex-row items-stretch border-b border-[#2C2D35] bg-[#0F1013] sticky top-0 z-40">
-        <div className="flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35]">
-          <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
-          <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
-        </div>
-        <div className="flex-1 flex overflow-x-auto no-scrollbar items-center px-4 md:px-6 justify-between">
-          <div className="flex items-center gap-4">
-            <Link to={backLink} className="flex items-center gap-2 font-mono text-xs text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-[#2C2D35] p-2 bg-[#1C1D22]">
-              <ArrowLeft size={16} /> VOLTAR_DASHBOARD
-            </Link>
-            <div className="h-4 w-px bg-[#2C2D35]" />
-            <span className="font-mono text-xs text-[#D4FF00] font-bold tracking-widest">CONFIG_SISTEMA // RF11</span>
-          </div>
-        </div>
-      </header>
+      <AppHeader>
+        <AppHeader.Brand />
+        <AppHeader.Nav>
+          <AppHeader.NavBack to={backLink}><ArrowLeft size={16} /> VOLTAR_DASHBOARD</AppHeader.NavBack>
+          <AppHeader.NavDivider />
+          <AppHeader.NavLabel>CONFIG_SISTEMA // RF11</AppHeader.NavLabel>
+        </AppHeader.Nav>
+      </AppHeader>
       <main className="flex-1 w-full max-w-[1200px] mx-auto p-4 md:p-8">
         <div className="mb-8">
           <h1 className="text-5xl font-display font-black uppercase tracking-tighter mb-2">
@@ -126,7 +107,7 @@ export function Settings() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-8">
             <section className="bg-[#1C1D22] border border-[#2C2D35] p-6">
-              <SectionHeader title="Dados de Identidade" code="MODEL_USER" icon={User} />
+              <SectionHeader title="Dados de Identidade" code="MODEL_USER" icon={User} className="pb-3" />
               <div className="space-y-4">
                 <ReadonlyField label="NOME_COMPLETO" value={user?.nome || ''} icon={User} />
                 <ReadonlyField label="EMAIL_INSTITUCIONAL" value={user?.email || ''} icon={Mail} />
@@ -141,7 +122,7 @@ export function Settings() {
               </div>
             </section>
             <section className="bg-[#1C1D22] border border-[#2C2D35] p-6">
-              <SectionHeader title="Segurança de Criptografia" code="RNF03" icon={Shield} />
+              <SectionHeader title="Segurança de Criptografia" code="RNF03" icon={Shield} className="pb-3" />
               <form onSubmit={handlePasswordChange} className="space-y-4">
                 {erroSenha && <div className="bg-red-500/10 border border-red-500/30 p-3 font-mono text-xs text-red-400">{erroSenha}</div>}
                 {['SENHA_ATUAL', 'NOVA_SENHA', 'CONFIRMAR_NOVA_SENHA'].map((label, i) => {
@@ -176,7 +157,7 @@ export function Settings() {
           </div>
           <div className="space-y-8">
             <section className="bg-[#1C1D22] border border-[#2C2D35] p-6">
-              <SectionHeader title="Painel de Notificações" code="RF12" icon={Bell} />
+              <SectionHeader title="Painel de Notificações" code="RF12" icon={Bell} className="pb-3" />
               <div className="space-y-3">
                 <NotificationToggle label="Alertas de Bugs Críticos" description="Receba notificações quando bugs críticos forem reportados em seus projetos" enabled={notifBugs} onChange={setNotifBugs} />
                 <NotificationToggle label="Novos Feedbacks de UX" description="Seja notificado quando testadores submeterem novos depoimentos" enabled={notifFeedback} onChange={setNotifFeedback} />

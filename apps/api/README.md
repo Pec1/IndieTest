@@ -1,18 +1,21 @@
 # IndieTest API
 
-API do **IndieTest** — plataforma de beta testing para softwares e jogos indie.
+Back-end do **IndieTest** — plataforma de beta testing para softwares e jogos indie.
 
-Stack: **Fastify + TypeScript + Prisma + PostgreSQL + Zod + JWT**.
+**Stack:** Fastify 5 · TypeScript · Prisma 5 · PostgreSQL · Zod · JWT
+
+---
 
 ## Estrutura
 
 ```
-backend/
+apps/api/
 ├── prisma/
-│   └── schema.prisma          # Schema do banco de dados
+│   ├── migrations/
+│   └── schema.prisma          # Schema do banco (12 models)
 ├── src/
-│   ├── authMiddleware/
-│   │   └── authenticate.ts    # Middleware JWT
+│   ├── middleware/
+│   │   └── authenticate.ts    # Middleware JWT + tipo CRequest
 │   ├── lib/
 │   │   └── prisma.ts          # Client Prisma (singleton)
 │   ├── routes/                # Um arquivo por endpoint
@@ -29,7 +32,12 @@ backend/
 │   │   ├── get-all-bugs.ts
 │   │   ├── get-bug.ts
 │   │   ├── update-bug-status.ts
-│   │   └── create-bug-response.ts
+│   │   ├── create-bug-response.ts
+│   │   ├── create-convite.ts
+│   │   ├── get-convites.ts
+│   │   ├── update-convite.ts
+│   │   ├── get-notificacoes.ts
+│   │   └── update-notificacao-lida.ts
 │   └── server.ts              # Bootstrap do Fastify
 ├── api.http                   # Requests de teste (REST Client)
 ├── .env.example
@@ -37,85 +45,110 @@ backend/
 └── tsconfig.json
 ```
 
+---
+
 ## Setup local
 
-1. **Instalar dependências:**
-   ```bash
-   npm install
-   ```
+```bash
+# 1. Instalar dependências
+npm install
 
-2. **Configurar variáveis de ambiente:**
-   ```bash
-   cp .env.example .env
-   # Edite .env e preencha DATABASE_URL e JWT_SECRET
-   ```
+# 2. Variáveis de ambiente
+cp .env.example .env
+# Edite .env: DATABASE_URL e JWT_SECRET
 
-3. **Rodar migrations:**
-   ```bash
-   npx prisma migrate dev --name init
-   ```
+# 3. Rodar migrations
+npx prisma migrate dev
 
-4. **Iniciar em modo dev:**
-   ```bash
-   npm run dev
-   ```
+# 4. Iniciar em modo dev (porta 3333)
+npm run dev
+```
 
-   Servidor sobe em `http://localhost:3333`.
+---
 
-## Endpoints implementados (Entrega 2)
+## Endpoints
 
 ### Autenticação
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| POST | `/users` | Cadastrar usuário (testador/desenvolvedor/administrador) |
-| POST | `/login` | Autenticar e receber JWT |
-| GET | `/painel` | Dados do usuário logado |
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `POST` | `/users` | — | Cadastrar usuário |
+| `POST` | `/login` | — | Autenticar e receber JWT |
+| `GET` | `/painel` | ✓ | Dados do usuário logado |
 
 ### Usuários
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| GET | `/users` | Listar todos os usuários |
-| GET | `/users/:id` | Detalhes de um usuário |
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/users` | ✓ | Listar usuários |
+| `GET` | `/users/:id` | ✓ | Detalhes de um usuário |
 
 ### Projetos
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| POST | `/projetos` | Criar projeto (dev) |
-| GET | `/projetos` | Listar projetos (com filtros) |
-| GET | `/projetos/:id` | Detalhes de um projeto |
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `POST` | `/projetos` | ✓ dev | Criar projeto |
+| `GET` | `/projetos` | ✓ | Listar projetos |
+| `GET` | `/projetos/:id` | ✓ | Detalhes de um projeto |
 
 ### Versões
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| POST | `/projetos/:id/versoes` | Criar versão de um projeto |
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `POST` | `/projetos/:id/versoes` | ✓ dev | Publicar versão |
 
 ### Sessões de Teste
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| POST | `/teste-sessoes` | Iniciar sessão de teste |
 
-### Bugs / Feedback
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| POST | `/bugs` | Reportar bug em uma sessão |
-| GET | `/bugs` | Listar bugs (com filtros) |
-| GET | `/bugs/:id` | Detalhes de um bug |
-| PATCH | `/bugs/:id/status` | Atualizar status (mod/dev) |
-| POST | `/bugs/:id/respostas` | Responder a um bug (dev) |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `POST` | `/teste-sessoes` | ✓ | Iniciar sessão de teste |
 
-## Testando
+### Bugs
 
-Use o arquivo **`api.http`** com a extensão REST Client do VS Code (ou Insomnia/Postman) para testar todos os endpoints em sequência.
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `POST` | `/bugs` | ✓ | Reportar bug |
+| `GET` | `/bugs` | ✓ | Listar bugs (filtros: `severidade`, `status`) |
+| `GET` | `/bugs/:id` | ✓ | Detalhes de um bug |
+| `PATCH` | `/bugs/:id/status` | ✓ dev/admin | Atualizar status |
+| `POST` | `/bugs/:id/respostas` | ✓ dev | Responder a um bug |
+
+### Convites
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `POST` | `/convites` | ✓ dev | Enviar convite a testador |
+| `GET` | `/convites` | ✓ | Listar convites do usuário |
+| `PATCH` | `/convites/:id` | ✓ | Aceitar ou recusar convite |
+
+### Notificações
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/notificacoes` | ✓ | Listar notificações do usuário |
+| `PATCH` | `/notificacoes/:id/lida` | ✓ | Marcar notificação como lida |
+
+---
 
 ## Autenticação
 
-Todos os endpoints (exceto `/users` POST, `/login` e `/health`) exigem JWT, que pode ser passado como:
-- **Cookie** `accessToken` (gerado automaticamente no login)
+Endpoints marcados com ✓ exigem JWT, passado como:
+- **Cookie** `accessToken` (setado automaticamente no login)
 - **Header** `Authorization: Bearer <token>`
 
-## Regras de negócio aplicadas
+---
 
-- **RN01** — Apenas desenvolvedores podem criar projetos
-- **RN02** — Bug exige título, descrição e severidade (validado por Zod)
-- **RN07** — Bloqueia bugs duplicados (mesmo título, mesma sessão)
-- **RN08** — Apenas administradores ou o dev dono podem alterar status do bug
+## Regras de negócio
+
+| Código | Regra |
+|--------|-------|
+| RN01 | Apenas desenvolvedores podem criar projetos |
+| RN02 | Bug exige título, descrição e severidade (validado por Zod) |
+| RN07 | Bloqueia bugs duplicados (mesmo título na mesma sessão) |
+| RN08 | Apenas administradores ou o dev dono do projeto podem alterar status do bug |
+
+---
+
+## Testando
+
+Use o arquivo **`api.http`** com a extensão [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) no VS Code para testar todos os endpoints em sequência.

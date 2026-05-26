@@ -2,7 +2,7 @@ import { ZodTypeProvider } from "fastify-type-provider-zod"
 import { z } from "zod"
 import { prisma } from "../lib/prisma"
 import { FastifyInstance } from "fastify"
-import { authMiddleware, CRequest } from "../authMiddleware/authenticate"
+import { authMiddleware, CRequest } from "../middleware/authenticate"
 
 export async function createBug(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().post('/bugs', {
@@ -60,6 +60,32 @@ export async function createBug(app: FastifyInstance) {
                 testeSessaoId,
             }
         })
+
+        // Notifica o desenvolvedor do projeto sobre o novo bug
+        const sessaoComProjeto = await prisma.testeSessao.findUnique({
+            where: { id: testeSessaoId },
+            include: {
+                versao: {
+                    include: {
+                        projeto: {
+                            include: { desenvolvedor: { select: { usuarioId: true, nomeEstudio: true } } }
+                        }
+                    }
+                }
+            }
+        })
+        if (sessaoComProjeto?.versao?.projeto?.desenvolvedor) {
+            const { usuarioId } = sessaoComProjeto.versao.projeto.desenvolvedor
+            const nomeProjeto = sessaoComProjeto.versao.projeto.nome
+            await prisma.notificacao.create({
+                data: {
+                    destinatarioId: usuarioId,
+                    tipo: 'bug',
+                    mensagem: `Novo bug "${titulo}" [${severidade}] reportado no projeto "${nomeProjeto}"`,
+                    status: 'pendente',
+                },
+            })
+        }
 
         return reply.status(201).send({
             message: 'Bug/feedback registrado com sucesso',

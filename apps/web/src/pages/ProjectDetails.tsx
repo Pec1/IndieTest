@@ -1,41 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Crosshair, ArrowLeft, Download, Bug, MessageSquare, Calendar, FileCode, Shield, ChevronDown, Package, AlertCircle, Clock, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Download, Bug, Calendar, Clock, FileCode, Shield, Package, AlertCircle, ExternalLink } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { getProjeto, type Projeto, type Versao } from '../api/projetos';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
-
-function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;
-}
-
-function VersionCard({ versao, isAtual }: { versao: Versao; isAtual: boolean }) {
-  const [isExpanded, setIsExpanded] = useState(isAtual);
-  return (
-    <div className={cn("bg-[#1C1D22] border-2 transition-colors", isAtual ? "border-[#D4FF00]" : "border-[#2C2D35] hover:border-[#4A3AFF]")}>
-      <button onClick={() => setIsExpanded(!isExpanded)} className="w-full p-4 flex items-center justify-between hover:bg-[#25262c] transition-colors">
-        <div className="flex items-center gap-4">
-          <div className={cn("font-display font-black text-2xl tracking-tighter", isAtual ? "text-[#D4FF00]" : "text-white")}>{versao.numeroVersao}</div>
-          {isAtual && <TechnicalLabel className="text-[#D4FF00] bg-[#D4FF00]/10 border-[#D4FF00]/30">BUILD_ATIVA</TechnicalLabel>}
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="font-mono text-xs text-zinc-500 flex items-center gap-2">
-            <Clock size={14} />{new Date(versao.dataPublicacao).toLocaleDateString('pt-BR')}
-          </div>
-          <ChevronDown size={20} className={cn("text-zinc-500 transition-transform", isExpanded && "rotate-180")} />
-        </div>
-      </button>
-      {isExpanded && (
-        <div className="border-t border-[#2C2D35] p-4 bg-[#0F1013]">
-          <div className="font-mono text-[10px] text-zinc-500 uppercase mb-3 flex items-center gap-2">
-            <FileCode size={14} /> NOTAS_DE_ATUALIZAÇÃO
-          </div>
-          <pre className="font-mono text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap">{versao.changelog}</pre>
-        </div>
-      )}
-    </div>
-  );
-}
+import { TechnicalLabel } from '../components/ui/TechnicalLabel';
+import { AppHeader } from '../components/ui/AppHeader';
+import { VersionCard } from '../components/shared/VersionCard';
 
 export function ProjectDetails() {
   const { id } = useParams<{ id: string }>();
@@ -69,26 +40,21 @@ export function ProjectDetails() {
 
   return (
     <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
-      <header className="flex flex-col md:flex-row items-stretch border-b border-[#2C2D35] bg-[#0F1013] sticky top-0 z-40">
-        <div className="flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35]">
-          <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
-          <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
-        </div>
-        <div className="flex-1 flex overflow-x-auto no-scrollbar items-center px-4 md:px-6 justify-between">
+      <AppHeader>
+        <AppHeader.Brand />
+        <AppHeader.Nav className="justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="flex items-center gap-2 font-mono text-xs text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-[#2C2D35] p-2 bg-[#1C1D22]">
-              <ArrowLeft size={16} /> VOLTAR_DASHBOARD
-            </button>
-            <div className="h-4 w-px bg-[#2C2D35]" />
-            <span className="font-mono text-xs text-[#D4FF00] font-bold tracking-widest">DETALHES_PROJETO // RF06</span>
+            <AppHeader.NavBack onClick={() => navigate(-1)}><ArrowLeft size={16} /> VOLTAR_DASHBOARD</AppHeader.NavBack>
+            <AppHeader.NavDivider />
+            <AppHeader.NavLabel>DETALHES_PROJETO // RF06</AppHeader.NavLabel>
           </div>
           {user?.tipo === 'desenvolvedor' && (
             <Link to={`/dev/project/${id}/versoes`} className="hidden sm:flex font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#D4FF00] text-black hover:bg-[#e2ff4d] transition-all text-xs items-center gap-2">
               GERENCIAR_VERSÕES
             </Link>
           )}
-        </div>
-      </header>
+        </AppHeader.Nav>
+      </AppHeader>
       <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8">
         <section className="mb-8 bg-[#1C1D22] border-2 border-[#4A3AFF] p-8 relative overflow-hidden">
           <div className="absolute inset-0 animated-grid" style={{ backgroundImage: 'linear-gradient(#4A3AFF 1px, transparent 1px), linear-gradient(90deg, #4A3AFF 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
@@ -204,7 +170,7 @@ export function ProjectDetails() {
               </div>
               <div className="p-4 space-y-3">
                 {versoes.length === 0 && <p className="font-mono text-xs text-zinc-500 text-center py-8">[NENHUMA_VERSÃO_CADASTRADA]</p>}
-                {versoes.map((v, i) => <VersionCard key={v.id} versao={v} isAtual={i === 0} />)}
+                {versoes.map((v, i) => <VersionCard key={v.id} versao={v} isLatest={i === 0} activeLabel="BUILD_ATIVA" changelogLabel="NOTAS_DE_ATUALIZAÇÃO" />)}
               </div>
             </section>
           </div>

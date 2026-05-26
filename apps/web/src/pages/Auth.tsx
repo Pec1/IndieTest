@@ -1,62 +1,12 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, ShieldAlert, Mail, Lock, User, Briefcase, Crosshair, Terminal, ArrowRight } from 'lucide-react';
+import { ShieldAlert, Mail, Lock, User, Briefcase, Crosshair, Terminal, ArrowRight } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { criarUsuario } from '../api/auth';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
-
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  icon?: React.ReactNode;
-}
-
-function BrutalistInput({ className, icon, type, ...props }: InputProps) {
-  const [showPassword, setShowPassword] = useState(false);
-  const isPassword = type === 'password';
-  const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
-  return (
-    <div className="relative group">
-      {icon && (
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-[#D4FF00] transition-colors z-10">
-          {icon}
-        </div>
-      )}
-      <input
-        type={inputType}
-        className={cn(
-          "w-full bg-[#0F1013] border border-[#2C2D35] text-white rounded-none py-3 px-4 font-mono text-sm outline-none transition-all duration-200 placeholder:text-zinc-600 focus:border-[#D4FF00] focus:bg-[#1C1D22]",
-          icon && "pl-11",
-          isPassword && "pr-11",
-          className
-        )}
-        {...props}
-      />
-      {isPassword && (
-        <button type="button" onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-0 top-0 h-full px-3 text-zinc-500 hover:text-[#D4FF00] hover:bg-[#2C2D35]/30 transition-colors focus:outline-none z-10 border-l border-transparent group-focus-within:border-[#2C2D35]">
-          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-        </button>
-      )}
-    </div>
-  );
-}
-
-function BrutalistButton({ children, className, variant = 'primary', type = 'button', disabled }: {
-  children: React.ReactNode; className?: string; variant?: 'primary' | 'secondary'; type?: 'button' | 'submit' | 'reset'; disabled?: boolean;
-}) {
-  const isPrimary = variant === 'primary';
-  return (
-    <button type={type} disabled={disabled}
-      className={cn(
-        "font-display font-bold uppercase tracking-widest px-6 py-4 transition-all duration-75 active:translate-y-[2px] active:translate-x-[2px] border border-transparent flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
-        isPrimary ? "bg-[#D4FF00] text-black hover:bg-[#e2ff4d] shadow-[4px_4px_0_0_#4A3AFF] active:shadow-[0_0_0_0_#4A3AFF]"
-          : "bg-[#1C1D22] text-white border-[#2C2D35] hover:border-[#D4FF00] shadow-[4px_4px_0_0_#000] active:shadow-[0_0_0_0_#000]",
-        className
-      )}>
-      {children}
-    </button>
-  );
-}
+import { BrutalistInput } from '../components/ui/BrutalistInput';
+import { BrutalistButton } from '../components/ui/BrutalistButton';
 
 function BrandSection() {
   return (
@@ -113,8 +63,7 @@ function LoginForm() {
     setCarregando(true);
     try {
       await signIn(email, senha);
-      const token = localStorage.getItem('@indietest:token');
-      if (!token) { setErro('Falha ao autenticar'); return; }
+      // user já foi carregado pelo signIn via getPainel — busca o estado atualizado
       const { getPainel } = await import('../api/auth');
       const { user } = await getPainel();
       navigate(user.tipo === 'desenvolvedor' ? '/dev' : '/dashboard');

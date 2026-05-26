@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Crosshair, ArrowLeft, Search, Bug, AlertTriangle, X, Image as ImageIcon, MessageSquare, Shield, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
-import { getBugs, atualizarStatusBug, type Bug as BugType } from '../api/bugs';
+import { getBugs, atualizarStatusBug, type Bug as BugType, type Paginacao } from '../api/bugs';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
-
-function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;
-}
+import { TechnicalLabel } from '../components/ui/TechnicalLabel';
+import { AppHeader } from '../components/ui/AppHeader';
+import { SeverityBadge } from '../components/shared/SeverityBadge';
+import { BugStatusBadge } from '../components/shared/BugStatusBadge';
 
 const SEVERIDADES = [
   { id: '', name: 'TODAS' },
@@ -24,28 +24,6 @@ const STATUSES = [
   { id: 'corrigido', name: 'CORRIGIDO', color: '#10b981' },
   { id: 'fechado', name: 'FECHADO', color: '#6b7280' },
 ];
-
-function SeverityBadge({ severity }: { severity: string }) {
-  const colors: Record<string, string> = {
-    Critica: 'bg-red-500/10 text-red-500 border-red-500',
-    Alta: 'bg-orange-500/10 text-orange-500 border-orange-500',
-    Media: 'bg-[#D4FF00]/10 text-[#D4FF00] border-[#D4FF00]',
-    Baixa: 'bg-zinc-500/10 text-zinc-500 border-zinc-500',
-  };
-  const labels: Record<string, string> = { Critica: 'CRÍTICA', Alta: 'ALTA', Media: 'MÉDIA', Baixa: 'BAIXA' };
-  return <span className={cn("font-mono text-[10px] font-bold uppercase px-2 py-1 border", colors[severity] || 'border-zinc-500 text-zinc-500')}>{labels[severity] || severity}</span>;
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const st = STATUSES.find(s => s.id === status);
-  if (!st || !st.id) return <span className="font-mono text-[10px] text-zinc-500">{status}</span>;
-  return (
-    <span className="font-mono text-[10px] font-bold uppercase px-2 py-1 border"
-      style={{ color: st.color, borderColor: st.color, backgroundColor: `${st.color}20` }}>
-      {st.name}
-    </span>
-  );
-}
 
 function BugDetailPanel({ bug, onClose, podeAlterarStatus }: { bug: BugType; onClose: () => void; podeAlterarStatus: boolean }) {
   const [selectedStatus, setSelectedStatus] = useState(bug.status);
@@ -73,7 +51,7 @@ function BugDetailPanel({ bug, onClose, podeAlterarStatus }: { bug: BugType; onC
               <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <span className="font-mono text-xs text-zinc-500">{bug.id.slice(0, 8)}</span>
                 <SeverityBadge severity={bug.severidade} />
-                <StatusBadge status={selectedStatus} />
+                <BugStatusBadge status={selectedStatus} />
               </div>
               <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">{bug.titulo}</h2>
               <div className="flex items-center gap-4 mt-2 text-xs font-mono text-zinc-500">
@@ -166,19 +144,22 @@ export function BugTracker() {
   const [filtroSeveridade, setFiltroSeveridade] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('');
   const [bugSelecionado, setBugSelecionado] = useState<BugType | null>(null);
+  const [paginacao, setPaginacao] = useState<Paginacao | null>(null);
+  const [pagina, setPagina] = useState(1);
 
   const podeAlterarStatus = user?.tipo === 'desenvolvedor' || user?.tipo === 'administrador';
 
   useEffect(() => {
-    const params: Record<string, string> = {};
-    if (filtroSeveridade) params.severidade = filtroSeveridade;
-    if (filtroStatus) params.status = filtroStatus;
     setCarregando(true);
-    getBugs(Object.keys(params).length > 0 ? params : undefined)
-      .then(({ bugs: b }) => setBugs(b))
+    getBugs({
+      ...(filtroSeveridade ? { severidade: filtroSeveridade } : {}),
+      ...(filtroStatus ? { status: filtroStatus } : {}),
+      page: pagina,
+    })
+      .then(({ bugs: b, paginacao: p }) => { setBugs(b); if (p) setPaginacao(p); })
       .catch(console.error)
       .finally(() => setCarregando(false));
-  }, [filtroSeveridade, filtroStatus]);
+  }, [filtroSeveridade, filtroStatus, pagina]);
 
   const bugsFiltrados = bugs.filter(b =>
     !busca || b.titulo.toLowerCase().includes(busca.toLowerCase()) || b.descricao.toLowerCase().includes(busca.toLowerCase())
@@ -193,24 +174,19 @@ export function BugTracker() {
 
   return (
     <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
-      <header className="flex flex-col md:flex-row items-stretch border-b border-[#2C2D35] bg-[#0F1013] sticky top-0 z-40">
-        <div className="flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35]">
-          <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
-          <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
-        </div>
-        <div className="flex-1 flex overflow-x-auto no-scrollbar items-center px-4 md:px-6 justify-between">
+      <AppHeader>
+        <AppHeader.Brand />
+        <AppHeader.Nav className="justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="flex items-center gap-2 font-mono text-xs text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-[#2C2D35] p-2 bg-[#1C1D22]">
-              <ArrowLeft size={16} /> VOLTAR
-            </button>
-            <div className="h-4 w-px bg-[#2C2D35]" />
-            <span className="font-mono text-xs text-[#D4FF00] font-bold tracking-widest">BUG_TRACKER // RF09</span>
+            <AppHeader.NavBack onClick={() => navigate(-1)}><ArrowLeft size={16} /> VOLTAR</AppHeader.NavBack>
+            <AppHeader.NavDivider />
+            <AppHeader.NavLabel>BUG_TRACKER // RF09</AppHeader.NavLabel>
           </div>
           <Link to="/report-bug" className="hidden sm:flex font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#4A3AFF] text-white hover:bg-white hover:text-black transition-all text-xs items-center gap-2">
             <Bug size={14} /> REPORTAR BUG
           </Link>
-        </div>
-      </header>
+        </AppHeader.Nav>
+      </AppHeader>
       <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-6">
         <div className="mb-6">
           <h1 className="text-4xl font-display font-black uppercase tracking-tighter mb-1">Matriz de <span className="text-[#D4FF00]">Triagem</span></h1>
@@ -269,7 +245,7 @@ export function BugTracker() {
                   <td className="p-4 font-bold text-white max-w-xs truncate">{bug.titulo}</td>
                   <td className="p-4 text-[#D4FF00]">{bug.testeSessao?.versao?.projeto?.nome || '—'}</td>
                   <td className="p-4"><SeverityBadge severity={bug.severidade} /></td>
-                  <td className="p-4"><StatusBadge status={bug.status} /></td>
+                  <td className="p-4"><BugStatusBadge status={bug.status} /></td>
                   <td className="p-4 text-zinc-500">{new Date(bug.dataCriacao).toLocaleDateString('pt-BR')}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
@@ -288,6 +264,27 @@ export function BugTracker() {
             </tbody>
           </table>
         </div>
+        {paginacao && paginacao.paginas > 1 && (
+          <div className="flex items-center justify-between mt-4 font-mono text-xs text-zinc-400">
+            <button
+              onClick={() => setPagina(p => Math.max(1, p - 1))}
+              disabled={pagina <= 1}
+              className="px-4 py-2 border border-[#2C2D35] bg-[#1C1D22] hover:border-[#D4FF00] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed uppercase tracking-widest"
+            >
+              Anterior
+            </button>
+            <span className="font-mono text-[10px] text-zinc-500 uppercase">
+              Página {paginacao.pagina} de {paginacao.paginas} — {paginacao.total} registros
+            </span>
+            <button
+              onClick={() => setPagina(p => Math.min(paginacao.paginas, p + 1))}
+              disabled={pagina >= paginacao.paginas}
+              className="px-4 py-2 border border-[#2C2D35] bg-[#1C1D22] hover:border-[#D4FF00] hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed uppercase tracking-widest"
+            >
+              Próximo
+            </button>
+          </div>
+        )}
       </main>
       {bugSelecionado && <BugDetailPanel bug={bugSelecionado} onClose={() => setBugSelecionado(null)} podeAlterarStatus={podeAlterarStatus} />}
     </div>

@@ -5,14 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { getProjetos, type Projeto } from '../api/projetos';
 import { getBugs, type Bug as BugType } from '../api/bugs';
 import { cn } from '../lib/utils';
-
-function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>
-      {children}
-    </div>
-  );
-}
+import { TechnicalLabel } from '../components/ui/TechnicalLabel';
+import { AppHeader } from '../components/ui/AppHeader';
 
 function Sparkline({ data, color = "#4A3AFF" }: { data: number[]; color?: string }) {
   const max = Math.max(...data);
@@ -36,38 +30,32 @@ function DevHeader() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   return (
-    <header className="flex flex-col md:flex-row items-stretch border-b border-white/20 bg-[#0F1013] sticky top-0 z-40">
-      <div className="flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-white/20">
-        <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
-        <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
-      </div>
-      <div className="flex-1 flex overflow-x-auto no-scrollbar">
-        <div className="flex flex-col justify-center px-6 border-r border-white/20 min-w-max">
-          <span className="text-[10px] text-zinc-500 font-mono mb-1">ID_USUÁRIO</span>
-          <span className="font-mono text-white text-sm">{user?.id?.slice(0, 8).toUpperCase()}</span>
-        </div>
-        <div className="flex flex-col justify-center px-6 border-r border-white/20 min-w-max">
-          <span className="text-[10px] text-zinc-500 font-mono mb-1">PERFIL</span>
+    <AppHeader className="border-white/20">
+      <AppHeader.Brand className="border-white/20" />
+      <AppHeader.InfoBar>
+        <AppHeader.InfoCell label="ID_USUÁRIO" className="border-white/20">
+          <span className="text-white">{user?.id?.slice(0, 8).toUpperCase()}</span>
+        </AppHeader.InfoCell>
+        <AppHeader.InfoCell label="PERFIL" className="border-white/20">
           <span className="font-mono text-[#D4FF00] font-bold text-sm bg-[#D4FF00]/10 px-2 py-0.5 border border-[#D4FF00]/30">
             [{user?.tipo?.toUpperCase()}]
           </span>
-        </div>
-        <div className="flex flex-col justify-center px-6 border-r border-white/20 min-w-max">
-          <span className="text-[10px] text-zinc-500 font-mono mb-1">ESTÚDIO</span>
-          <span className="font-mono text-white text-sm">{user?.desenvolvedor?.nomeEstudio || '—'}</span>
-        </div>
+        </AppHeader.InfoCell>
+        <AppHeader.InfoCell label="ESTÚDIO" className="border-white/20">
+          <span className="text-white">{user?.desenvolvedor?.nomeEstudio || '—'}</span>
+        </AppHeader.InfoCell>
         <Link to="/notificacoes" className="flex items-center justify-center px-4 hover:bg-[#1C1D22] transition-colors group">
           <Bell size={20} className="text-zinc-500 group-hover:text-[#D4FF00] transition-colors" strokeWidth={1.5} />
         </Link>
         <Link to="/settings" className="flex items-center justify-center px-4 hover:bg-[#1C1D22] transition-colors group">
           <Settings size={20} className="text-zinc-500 group-hover:text-[#D4FF00] transition-colors" strokeWidth={1.5} />
         </Link>
-      </div>
-      <div className="hidden lg:flex items-center justify-center px-4 border-l border-white/20 gap-2">
+      </AppHeader.InfoBar>
+      <AppHeader.Actions className="border-white/20">
         <Link to="/dashboard" className="font-mono text-[10px] text-zinc-400 hover:text-white border border-white/10 hover:border-white/30 px-3 py-2 transition-colors">TESTADOR</Link>
         <button onClick={() => { signOut(); navigate('/'); }} className="font-display font-bold text-xs text-red-400 hover:text-red-300 border border-red-400/20 hover:border-red-300/30 px-3 py-2 transition-colors">SAIR</button>
-      </div>
-    </header>
+      </AppHeader.Actions>
+    </AppHeader>
   );
 }
 

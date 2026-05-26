@@ -5,6 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { getConvites, responderConvite, type Convite } from '../api/convites';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
+import { StatsGrid } from '../components/ui/StatsGrid';
+import { AppHeader } from '../components/ui/AppHeader';
 
 function StatusBadge({ status }: { status: Convite['statusConvite'] }) {
   const configs = {
@@ -55,19 +57,14 @@ export function Invites() {
 
   return (
     <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
-      <header className="flex flex-col md:flex-row items-stretch border-b border-[#2C2D35] bg-[#0F1013] sticky top-0 z-40">
-        <div className="flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35]">
-          <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
-          <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
-        </div>
-        <div className="flex-1 flex overflow-x-auto no-scrollbar items-center px-4 md:px-6">
-          <Link to="/dashboard" className="flex items-center gap-2 font-mono text-xs text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-[#2C2D35] p-2 bg-[#1C1D22]">
-            <ArrowLeft size={16} /> VOLTAR_AO_TERMINAL
-          </Link>
-          <div className="mx-4 h-4 w-px bg-[#2C2D35]" />
-          <span className="font-mono text-xs text-[#D4FF00] font-bold tracking-widest">CONVITES // RF_INVITE</span>
-        </div>
-      </header>
+      <AppHeader>
+        <AppHeader.Brand />
+        <AppHeader.Nav>
+          <AppHeader.NavBack to="/dashboard"><ArrowLeft size={16} /> VOLTAR_AO_TERMINAL</AppHeader.NavBack>
+          <AppHeader.NavDivider />
+          <AppHeader.NavLabel>CONVITES // RF_INVITE</AppHeader.NavLabel>
+        </AppHeader.Nav>
+      </AppHeader>
       <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-8">
         <div className="mb-8">
           <h1 className="text-5xl font-display font-black uppercase tracking-tighter">
@@ -80,18 +77,11 @@ export function Invites() {
           <div className="mb-6 bg-red-500/10 border border-red-500/30 p-4 font-mono text-xs text-red-400">{erro}</div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border border-[#2C2D35] mb-8">
-          {[
-            { label: 'PENDENTES', value: pendentes.length, color: 'text-[#D4FF00]' },
-            { label: 'ACEITOS', value: convites.filter(c => c.statusConvite === 'aceito').length, color: 'text-[#10b981]' },
-            { label: 'RECUSADOS', value: convites.filter(c => c.statusConvite === 'recusado').length, color: 'text-red-500' },
-          ].map((s, i) => (
-            <div key={i} className="p-6 bg-[#1C1D22] border-b md:border-b-0 md:border-r border-[#2C2D35] last:border-0">
-              <div className="font-mono text-xs text-zinc-500 mb-3">{s.label}</div>
-              <div className={cn("font-display font-black text-5xl tracking-tighter", s.color)}>{s.value}</div>
-            </div>
-          ))}
-        </div>
+        <StatsGrid cols={3}>
+          <StatsGrid.Item label="PENDENTES" value={pendentes.length} color="text-[#D4FF00]" />
+          <StatsGrid.Item label="ACEITOS" value={convites.filter(c => c.statusConvite === 'aceito').length} color="text-[#10b981]" />
+          <StatsGrid.Item label="RECUSADOS" value={convites.filter(c => c.statusConvite === 'recusado').length} color="text-red-500" />
+        </StatsGrid>
 
         {carregando ? (
           <div className="flex items-center justify-center py-24">

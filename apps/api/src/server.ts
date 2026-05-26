@@ -2,6 +2,9 @@ import { serializerCompiler, validatorCompiler, ZodTypeProvider } from "fastify-
 import { fastify } from "fastify";
 import fastifyCookie = require('@fastify/cookie');
 import fastifyCors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
+import fastifyMultipart from '@fastify/multipart';
+import path from 'node:path';
 
 // Rotas de Usuario / Autenticação
 import { createUser } from "./routes/create-user";
@@ -36,8 +39,14 @@ import { createConvite } from "./routes/create-convite";
 import { getConvites } from "./routes/get-convites";
 import { updateConvite } from "./routes/update-convite";
 
+// Rotas de Atividades
+import { getAtividades } from "./routes/get-atividades";
+
+// Rota de Anexos de Bug
+import { createBugAttachment } from "./routes/create-bug-attachment";
+
 // Painel
-import { authMiddleware, CRequest } from "./authMiddleware/authenticate";
+import { authMiddleware, CRequest } from "./middleware/authenticate";
 import { prisma } from "./lib/prisma";
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
@@ -57,6 +66,8 @@ app.register(fastifyCookie, {
     secret: process.env.C_SECRET,
     hook: 'onRequest' as const,
 });
+
+app.register(fastifyMultipart);
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
@@ -87,6 +98,9 @@ app.register(updateNotificacaoLida);
 app.register(createConvite);
 app.register(getConvites);
 app.register(updateConvite);
+
+app.register(getAtividades);
+app.register(createBugAttachment);
 
 // Painel: dados do usuário logado
 app.get('/painel', { preHandler: authMiddleware }, async (request: CRequest, reply) => {
@@ -119,6 +133,12 @@ app.get('/painel', { preHandler: authMiddleware }, async (request: CRequest, rep
 
 // Health check
 app.get('/health', async () => ({ status: 'ok', service: 'indietest-api' }));
+
+// Serve arquivos estáticos de uploads
+app.register(fastifyStatic, {
+    root: path.join(process.cwd(), 'uploads'),
+    prefix: '/uploads/',
+});
 
 app.listen({
     host: '0.0.0.0',

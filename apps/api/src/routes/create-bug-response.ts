@@ -2,7 +2,7 @@ import { ZodTypeProvider } from "fastify-type-provider-zod"
 import { z } from "zod"
 import { prisma } from "../lib/prisma"
 import { FastifyInstance } from "fastify"
-import { authMiddleware, CRequest } from "../authMiddleware/authenticate"
+import { authMiddleware, CRequest } from "../middleware/authenticate"
 
 export async function createBugResponse(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().post('/bugs/:id/respostas', {
@@ -44,6 +44,26 @@ export async function createBugResponse(app: FastifyInstance) {
                 visivelTestador,
             }
         })
+
+        // Notifica o testador que o bug recebeu uma resposta
+        const bugComSessao = await prisma.feedbackBug.findUnique({
+            where: { id: feedbackBugId },
+            include: {
+                testeSessao: {
+                    include: { testador: { select: { usuarioId: true } } }
+                }
+            }
+        })
+        if (bugComSessao?.testeSessao?.testador) {
+            await prisma.notificacao.create({
+                data: {
+                    destinatarioId: bugComSessao.testeSessao.testador.usuarioId,
+                    tipo: 'resposta',
+                    mensagem: `Seu bug "${bugComSessao.titulo}" recebeu uma resposta do desenvolvedor`,
+                    status: 'pendente',
+                },
+            })
+        }
 
         return reply.status(201).send({
             message: 'Resposta registrada',

@@ -5,36 +5,10 @@ import { criarProjeto, criarVersao } from '../api/projetos';
 import { convidarTestador } from '../api/convites';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
-
-function TechnicalLabel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("text-[10px] font-mono text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20 inline-flex items-center gap-1", className)}>{children}</div>;
-}
-
-function SectionHeader({ title, code, icon: Icon }: { title: string; code: string; icon: React.ElementType }) {
-  return (
-    <div className="flex items-center justify-between border-b border-[#2C2D35] pb-2 mb-6 mt-10 first:mt-0">
-      <h2 className="text-xl font-display font-black tracking-tight text-white uppercase flex items-center gap-2">
-        <Icon className="text-[#4A3AFF]" size={20} strokeWidth={2} /> {title}
-      </h2>
-      <TechnicalLabel className="text-[#4A3AFF] bg-[#4A3AFF]/10 border-[#4A3AFF]/30">{code}</TechnicalLabel>
-    </div>
-  );
-}
-
-function TerminalField({ label, id, required, children }: { label: string; id: string; required?: boolean; children: React.ReactNode }) {
-  return (
-    <div className="space-y-2">
-      <label htmlFor={id} className="font-mono text-[10px] font-bold uppercase text-zinc-400 tracking-widest flex items-center gap-2">
-        <span className="w-1.5 h-1.5 bg-[#4A3AFF] inline-block" /> {label}
-        {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="relative group flex items-start border border-[#2C2D35] bg-[#1C1D22] focus-within:border-[#D4FF00] transition-colors">
-        <div className="pl-3 pr-2 pt-3 text-[#D4FF00] font-mono font-bold select-none">&gt;</div>
-        {children}
-      </div>
-    </div>
-  );
-}
+import { TechnicalLabel } from '../components/ui/TechnicalLabel';
+import { SectionHeader } from '../components/ui/SectionHeader';
+import { TerminalField } from '../components/ui/TerminalField';
+import { AppHeader } from '../components/ui/AppHeader';
 
 export function NewProject() {
   const navigate = useNavigate();
@@ -109,19 +83,14 @@ export function NewProject() {
 
   return (
     <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
-      <header className="flex flex-col md:flex-row items-stretch border-b border-[#2C2D35] bg-[#0F1013] sticky top-0 z-40">
-        <div className="flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35]">
-          <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
-          <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
-        </div>
-        <div className="flex-1 flex overflow-x-auto no-scrollbar items-center px-4 md:px-6">
-          <Link to="/dev" className="flex items-center gap-2 font-mono text-xs text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-[#2C2D35] p-2 bg-[#1C1D22]">
-            <ArrowLeft size={16} /> VOLTAR_AO_TERMINAL
-          </Link>
-          <div className="mx-4 h-4 w-px bg-[#2C2D35]" />
-          <span className="font-mono text-xs text-[#D4FF00] font-bold tracking-widest">NOVO_PROJETO // SYS_CONFIG</span>
-        </div>
-      </header>
+      <AppHeader>
+        <AppHeader.Brand />
+        <AppHeader.Nav>
+          <AppHeader.NavBack to="/dev"><ArrowLeft size={16} /> VOLTAR_AO_TERMINAL</AppHeader.NavBack>
+          <AppHeader.NavDivider />
+          <AppHeader.NavLabel>NOVO_PROJETO // SYS_CONFIG</AppHeader.NavLabel>
+        </AppHeader.Nav>
+      </AppHeader>
       <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-8">
         <div className="mb-8">
           <h1 className="text-5xl font-display font-black uppercase tracking-tighter">

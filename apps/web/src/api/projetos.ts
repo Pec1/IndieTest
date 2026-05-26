@@ -32,8 +32,22 @@ export interface Projeto {
   }[];
 }
 
-export async function getProjetos(params?: { status?: string; categoria?: string }): Promise<{ projetos: Projeto[] }> {
-  const qs = params ? '?' + new URLSearchParams(params as Record<string, string>).toString() : '';
+export interface Paginacao {
+  total: number;
+  pagina: number;
+  limite: number;
+  paginas: number;
+}
+
+export async function getProjetos(params?: {
+  status?: string;
+  categoria?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ projetos: Projeto[]; paginacao?: Paginacao }> {
+  const qs = params ? '?' + new URLSearchParams(
+    Object.fromEntries(Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)]))
+  ).toString() : '';
   return api(`/projetos${qs}`);
 }
 

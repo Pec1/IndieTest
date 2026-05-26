@@ -41,13 +41,24 @@ export interface Bug {
   _count?: { anexos: number; respostas: number };
 }
 
+export interface Paginacao {
+  total: number;
+  pagina: number;
+  limite: number;
+  paginas: number;
+}
+
 export async function getBugs(params?: {
   projetoId?: string;
   status?: string;
   severidade?: string;
   tipo?: string;
-}): Promise<{ bugs: Bug[] }> {
-  const qs = params ? '?' + new URLSearchParams(params as Record<string, string>).toString() : '';
+  page?: number;
+  limit?: number;
+}): Promise<{ bugs: Bug[]; paginacao?: Paginacao }> {
+  const qs = params ? '?' + new URLSearchParams(
+    Object.fromEntries(Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)]))
+  ).toString() : '';
   return api(`/bugs${qs}`);
 }
 
