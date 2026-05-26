@@ -32,7 +32,7 @@ function AppHeader({ children, className }: { children: React.ReactNode; classNa
 
 function AppHeaderBrand({ className }: { className?: string }) {
   const { user } = useAuth();
-  const to = user?.tipo === 'desenvolvedor' ? '/dev' : '/dashboard';
+  const to = '/dashboard';
   return (
     <Link
       to={to}

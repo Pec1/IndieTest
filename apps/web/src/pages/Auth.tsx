@@ -66,7 +66,7 @@ function LoginForm() {
       // user já foi carregado pelo signIn via getPainel — busca o estado atualizado
       const { getPainel } = await import('../api/auth');
       const { user } = await getPainel();
-      navigate(user.tipo === 'desenvolvedor' ? '/dev' : '/dashboard');
+      navigate('/dashboard');
     } catch (e) {
       setErro(e instanceof ApiError ? e.message : 'Credenciais inválidas');
     } finally {
@@ -127,7 +127,7 @@ function RegisterForm() {
     try {
       await criarUsuario({ nome, email, senha, tipo, ...(tipo === 'desenvolvedor' ? { nomeEstudio } : {}) });
       await signIn(email, senha);
-      navigate(tipo === 'desenvolvedor' ? '/dev' : '/dashboard');
+      navigate('/dashboard');
     } catch (e) {
       setErro(e instanceof ApiError ? e.message : 'Erro ao criar conta');
     } finally {
@@ -244,7 +244,7 @@ export function Auth() {
 
   if (isLoading) return null;
   if (isAuthenticated && user) {
-    return <Navigate to={user.tipo === 'desenvolvedor' ? '/dev' : '/dashboard'} replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
