@@ -52,9 +52,11 @@ import { prisma } from "./lib/prisma";
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
 app.register(fastifyCors, {
-        origin: [
+    origin: [
         'http://localhost:5173',
-        'https://congenial-tribble-66vjxpj444gc4ppq-5173.app.github.dev',
+        'http://0.0.0.0:5173',
+        /\.replit\.dev$/,
+        /\.repl\.co$/,
         /\.app\.github\.dev$/,
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -141,8 +143,8 @@ app.register(fastifyStatic, {
 });
 
 app.listen({
-    host: '0.0.0.0',
-    port: process.env.PORT ? Number(process.env.PORT) : 3333,
+    host: 'localhost',
+    port: process.env.PORT ? Number(process.env.PORT) : 3000,
 }).then(() => {
-    console.log(`HTTP Server running on port ${process.env.PORT ?? 3333}`);
+    console.log(`HTTP Server running on port ${process.env.PORT ?? 3000}`);
 });
