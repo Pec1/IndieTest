@@ -1,6 +1,7 @@
 import { Crosshair } from 'lucide-react';
 import { Link } from 'react-router';
 import { cn } from '../../lib/utils';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Primitivo de header global do app.
@@ -30,14 +31,19 @@ function AppHeader({ children, className }: { children: React.ReactNode; classNa
 }
 
 function AppHeaderBrand({ className }: { className?: string }) {
+  const { user } = useAuth();
+  const to = user?.tipo === 'desenvolvedor' ? '/dev' : '/dashboard';
   return (
-    <div className={cn(
-      "flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35]",
-      className
-    )}>
+    <Link
+      to={to}
+      className={cn(
+        "flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35] hover:bg-[#1C1D22] transition-colors",
+        className
+      )}
+    >
       <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
       <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
-    </div>
+    </Link>
   );
 }
 
