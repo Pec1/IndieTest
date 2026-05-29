@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
-import { Crosshair, ArrowLeft, User, Shield, Bell, Lock, Mail, Phone, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { Link } from 'react-router';
+import React, { useState, useEffect } from 'react';
+import { Crosshair, User, Shield, Bell, Lock, Mail, Phone, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
-import { TechnicalLabel } from '../components/ui/TechnicalLabel';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { AppHeader } from '../components/ui/AppHeader';
 
@@ -51,16 +49,24 @@ export function Settings() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [erroSenha, setErroSenha] = useState('');
+  const [isLightMode, setIsLightMode] = useState(() => document.documentElement.classList.contains('light-mode'));
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setIsLightMode(document.documentElement.classList.contains('light-mode'));
+    };
+    window.addEventListener('theme-change', handleThemeChange);
+    return () => window.removeEventListener('theme-change', handleThemeChange);
+  }, []);
+
+  const [sucesso, setSucesso] = useState('');
+  const [salvando, setSalvando] = useState(false);
 
   const isDev = user?.tipo === 'desenvolvedor';
-  const backLink = isDev ? '/dev' : '/dashboard';
 
   function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault();
-    setErroSenha('');
-    if (newPassword !== confirmPassword) { setErroSenha('As senhas não coincidem'); return; }
-    if (newPassword.length < 6) { setErroSenha('A nova senha deve ter ao menos 6 caracteres'); return; }
+    setSucesso('');
     alert('Funcionalidade de troca de senha não disponível nesta versão.');
   }
 
@@ -69,9 +75,7 @@ export function Settings() {
       <AppHeader>
         <AppHeader.Brand />
         <AppHeader.Nav>
-          <AppHeader.NavBack to={backLink}><ArrowLeft size={16} /> VOLTAR_DASHBOARD</AppHeader.NavBack>
-          <AppHeader.NavDivider />
-          <AppHeader.NavLabel>CONFIG_SISTEMA // RF11</AppHeader.NavLabel>
+          <AppHeader.NavLabel>CONFIG_SISTEMA</AppHeader.NavLabel>
         </AppHeader.Nav>
       </AppHeader>
       <main className="flex-1 w-full max-w-[1200px] mx-auto p-4 md:p-8">
@@ -107,7 +111,7 @@ export function Settings() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-8">
             <section className="bg-[#1C1D22] border border-[#2C2D35] p-6">
-              <SectionHeader title="Dados de Identidade" code="MODEL_USER" icon={User} className="pb-3" />
+              <SectionHeader title="Dados de Identidade" code="" icon={User} className="pb-3" />
               <div className="space-y-4">
                 <ReadonlyField label="NOME_COMPLETO" value={user?.nome || ''} icon={User} />
                 <ReadonlyField label="EMAIL_INSTITUCIONAL" value={user?.email || ''} icon={Mail} />
@@ -122,10 +126,15 @@ export function Settings() {
               </div>
             </section>
             <section className="bg-[#1C1D22] border border-[#2C2D35] p-6">
-              <SectionHeader title="Segurança de Criptografia" code="RNF03" icon={Shield} className="pb-3" />
-              <form onSubmit={handlePasswordChange} className="space-y-4">
-                {erroSenha && <div className="bg-red-500/10 border border-red-500/30 p-3 font-mono text-xs text-red-400">{erroSenha}</div>}
-                {['SENHA_ATUAL', 'NOVA_SENHA', 'CONFIRMAR_NOVA_SENHA'].map((label, i) => {
+              <SectionHeader title="Segurança de Criptografia" code="" icon={Shield} className="pb-3" />
+              <form onSubmit={handlePasswordChange} className="space-y-4"> {/* Adicionado campo para senha atual */}
+                {sucesso && (
+                  <div className="bg-[#10b981]/10 border border-[#10b981] p-3 font-mono text-xs text-[#10b981] flex items-center gap-2">
+                    <CheckCircle2 size={14} /> {sucesso}
+                  </div>
+                )}
+                
+                {['SENHA_ATUAL', 'NOVA_SENHA', 'CONFIRMAR_NOVA_SENHA'].map((label, i) => { // Rótulos atualizados para clareza
                   const vals = [currentPassword, newPassword, confirmPassword];
                   const setters = [setCurrentPassword, setNewPassword, setConfirmPassword];
                   return (
@@ -142,8 +151,8 @@ export function Settings() {
                   );
                 })}
                 <div className="pt-4">
-                  <button type="submit" className="w-full font-display font-bold uppercase tracking-widest px-6 py-3 bg-[#D4FF00] text-black border-2 border-[#D4FF00] hover:bg-[#b8e000] transition-colors">
-                    Atualizar Credenciais
+                  <button type="submit" disabled={salvando} className="w-full font-display font-bold uppercase tracking-widest px-6 py-3 bg-[#D4FF00] text-black border-2 border-[#D4FF00] hover:bg-[#b8e000] transition-colors disabled:opacity-50">
+                    {salvando ? 'PROCESSANDO...' : 'Atualizar Credenciais'}
                   </button>
                 </div>
                 <div className="mt-6 pt-4 border-t border-[#2C2D35]">
@@ -157,7 +166,7 @@ export function Settings() {
           </div>
           <div className="space-y-8">
             <section className="bg-[#1C1D22] border border-[#2C2D35] p-6">
-              <SectionHeader title="Painel de Notificações" code="RF12" icon={Bell} className="pb-3" />
+              <SectionHeader title="Painel de Notificações" code="" icon={Bell} className="pb-3" />
               <div className="space-y-3">
                 <NotificationToggle label="Alertas de Bugs Críticos" description="Receba notificações quando bugs críticos forem reportados em seus projetos" enabled={notifBugs} onChange={setNotifBugs} />
                 <NotificationToggle label="Novos Feedbacks de UX" description="Seja notificado quando testadores submeterem novos depoimentos" enabled={notifFeedback} onChange={setNotifFeedback} />
@@ -169,6 +178,30 @@ export function Settings() {
                   Salvar Preferências
                 </button>
               </div>
+            </section>
+            <section className="bg-[#1C1D22] border border-[#2C2D35] p-6 transition-all">
+              <SectionHeader title="Visual & Customização" code="" icon={User} className="pb-3" />
+              <div className="p-4 bg-[#0F1013] border border-[#2C2D35] flex items-center justify-between">
+                <div>
+                  <div className="font-display font-bold text-white uppercase tracking-wide text-sm mb-1">Modo Claro Ativo</div>
+                  <p className="font-mono text-[10px] text-zinc-500 uppercase">Alternar visual global do terminal entre claro e escuro</p>
+                </div>
+                <button type="button" onClick={() => {
+                  if (document.documentElement.classList.contains('light-mode')) {
+                    document.documentElement.classList.remove('light-mode');
+                    localStorage.setItem('@indietest:theme', 'dark');
+                  } else {
+                    document.documentElement.classList.add('light-mode');
+                    localStorage.setItem('@indietest:theme', 'light');
+                  }
+                  window.dispatchEvent(new Event('theme-change'));
+                }} className={cn("w-12 h-6 border-2 transition-colors relative", isLightMode ? "bg-[#D4FF00] border-[#D4FF00]" : "bg-[#0F1013] border-[#2C2D35]")}>
+                  <div className={cn("absolute top-0.5 w-4 h-4 transition-all", isLightMode ? "left-[calc(100%-1.125rem)] bg-white" : "left-0.5 bg-zinc-500")} />
+                </button>
+              </div>
+              <p className="mt-4 font-mono text-[9px] text-zinc-500 uppercase leading-relaxed">
+                O Modo Claro adapta o contraste para ambientes iluminados, mantendo a fidelidade técnica da interface.
+              </p>
             </section>
             <section className="bg-[#1C1D22] border-2 border-red-500/30 p-6 relative overflow-hidden">
               <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(-45deg, #ef4444, #ef4444 20px, transparent 20px, transparent 40px)' }} />

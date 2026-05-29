@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, setAuthToken } from './client';
 
 export interface Usuario {
   id: string;
@@ -34,10 +34,12 @@ export interface CriarUsuarioBody {
 }
 
 export async function login(email: string, senha: string): Promise<LoginResponse> {
-  return api('/login', {
+  const response = await api<LoginResponse>('/login', {
     method: 'POST',
     body: JSON.stringify({ email, senha }),
   });
+  setAuthToken(response.token);
+  return response;
 }
 
 export async function criarUsuario(body: CriarUsuarioBody) {

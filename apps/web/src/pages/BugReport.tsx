@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Crosshair, ArrowLeft, Send, ShieldAlert, FileWarning, AlertTriangle, X, UploadCloud, Image as ImageIcon, Terminal } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
-import { criarBug } from '../api/bugs';
+import { criarBug, uploadBugAnexo } from '../api/bugs';
 import { getProjetos, getProjeto } from '../api/projetos';
 import { criarSessao } from '../api/sessoes';
 import type { Projeto, Versao } from '../api/projetos';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
-import { TechnicalLabel } from '../components/ui/TechnicalLabel';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { AppHeader } from '../components/ui/AppHeader';
 
@@ -33,7 +32,6 @@ export function BugReport() {
   const [severidade, setSeveridade] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [isDragActive, setIsDragActive] = useState(false);
-  const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
@@ -49,9 +47,7 @@ export function BugReport() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!severidade) { setErro('Selecione a severidade do bug'); return; }
-    if (!versaoSelecionada) { setErro('Selecione uma versão do projeto'); return; }
-    setErro('');
+    if (!severidade || !versaoSelecionada) return;
     setEnviando(true);
     try {
       const ua = navigator.userAgent;
@@ -65,18 +61,12 @@ export function BugReport() {
       const { bug } = await criarBug({ testeSessaoId: sessao.id, titulo, descricao, tipo, severidade });
       if (files.length > 0) {
         for (const arquivo of files) {
-          const formData = new FormData();
-          formData.append('file', arquivo);
-          await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3333'}/bugs/${bug.id}/anexos`, {
-            method: 'POST',
-            body: formData,
-            credentials: 'include',
-          });
+          await uploadBugAnexo(bug.id, arquivo);
         }
       }
       navigate('/bug-tracker');
-    } catch (e) {
-      setErro(e instanceof ApiError ? e.message : 'Erro ao reportar bug');
+    } catch (err) {
+      console.error(err);
     } finally {
       setEnviando(false);
     }
@@ -87,9 +77,7 @@ export function BugReport() {
       <AppHeader>
         <AppHeader.Brand />
         <AppHeader.Nav>
-          <AppHeader.NavBack to="/dashboard"><ArrowLeft size={16} /> VOLTAR_AO_TERMINAL</AppHeader.NavBack>
-          <AppHeader.NavDivider />
-          <AppHeader.NavLabel>REPORTAR_FALHA // SYS_DEBUG</AppHeader.NavLabel>
+          <AppHeader.NavLabel>REPORTAR_FALHA</AppHeader.NavLabel>
         </AppHeader.Nav>
       </AppHeader>
       <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-8">
@@ -99,10 +87,9 @@ export function BugReport() {
           </h1>
           <p className="font-mono text-xs text-zinc-500 mt-2">SYS_DEBUG. REGISTRAR PARÂMETROS DA FALHA ENCONTRADA.</p>
         </div>
-        {erro && <div className="mb-6 bg-red-500/10 border border-red-500/30 p-4 font-mono text-xs text-red-400">{erro}</div>}
         <form onSubmit={handleSubmit} className="space-y-0">
           <div className="bg-[#1C1D22] border border-[#2C2D35] p-6 sm:p-8">
-            <SectionHeader title="PROJETO E VERSÃO" code="RF01" icon={Terminal} />
+            <SectionHeader title="PROJETO E VERSÃO" code="" icon={Terminal} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="space-y-2">
                 <label className="font-mono text-[10px] font-bold uppercase text-zinc-400 tracking-widest flex items-center gap-2">
@@ -148,7 +135,7 @@ export function BugReport() {
                 </div>
               </div>
             </div>
-            <SectionHeader title="DADOS DA ANOMALIA" code="RN02" icon={ShieldAlert} />
+            <SectionHeader title="DADOS DA ANOMALIA" code="" icon={ShieldAlert} />
             <div className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="titulo" className="font-mono text-[10px] font-bold uppercase text-zinc-400 tracking-widest flex items-center gap-2">
@@ -189,7 +176,7 @@ export function BugReport() {
           </div>
           <div className="bg-[#1C1D22] border-x border-[#2C2D35] border-b p-6 sm:p-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[repeating-linear-gradient(-45deg,transparent,transparent_10px,rgba(74,58,255,0.03)_10px,rgba(74,58,255,0.03)_20px)] pointer-events-none" />
-            <SectionHeader title="MÍDIAS E ARQUIVOS" code="RF08" icon={FileWarning} />
+            <SectionHeader title="MÍDIAS E ARQUIVOS" code="" icon={FileWarning} />
             <input type="file" ref={fileInputRef} onChange={e => e.target.files && setFiles(prev => [...prev, ...Array.from(e.target.files!)])} className="hidden" multiple accept="image/*,.log,.txt" />
             <div
               className={cn("border-2 border-dashed p-8 flex flex-col items-center justify-center transition-all cursor-pointer relative min-h-[160px]",

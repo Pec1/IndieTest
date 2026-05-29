@@ -8,6 +8,12 @@ import { CRequest } from "../middleware/authenticate";
 
 export async function login(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().post('/login', {
+        config: {
+            rateLimit: {
+                max: 5,
+                timeWindow: '1 minute',
+            },
+        },
         schema: {
             body: z.object({
                 email: z.string().email(),

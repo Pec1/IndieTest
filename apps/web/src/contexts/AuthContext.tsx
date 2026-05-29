@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { Usuario } from '../api/auth';
 import { login as apiLogin, getPainel } from '../api/auth';
+import { setAuthToken } from '../api/client';
 
 interface AuthContextType {
   user: Usuario | null;
@@ -17,6 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const signOut = useCallback(() => {
+    setAuthToken(null);
     setUser(null);
   }, []);
 

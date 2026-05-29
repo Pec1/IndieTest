@@ -5,7 +5,6 @@ import { getProjetos, getProjeto, type Projeto, type Versao } from '../api/proje
 import { criarSessao } from '../api/sessoes';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
-import { TechnicalLabel } from '../components/ui/TechnicalLabel';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { AppHeader } from '../components/ui/AppHeader';
 
@@ -24,7 +23,6 @@ export function StartTestSession() {
   const [soCustom, setSoCustom] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
 
   useEffect(() => {
@@ -43,17 +41,16 @@ export function StartTestSession() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErro('');
     const dispFinal = dispositivo === 'Outro' ? dispositivoCustom : dispositivo;
     const soFinal = sistemaOperacional === 'Outro' ? soCustom : sistemaOperacional;
-    if (!dispFinal || !soFinal) { setErro('Preencha todos os campos obrigatórios'); return; }
+    if (!dispFinal || !soFinal) return;
     setSalvando(true);
     try {
       const { sessao } = await criarSessao({ versaoId, dispositivo: dispFinal, sistemaOperacional: soFinal });
       setSucesso(`Sessão iniciada com sucesso! ID: ${sessao.id.slice(0, 8).toUpperCase()}`);
       setTimeout(() => navigate('/report-bug'), 2000);
-    } catch (e) {
-      setErro(e instanceof ApiError ? e.message : 'Erro ao iniciar sessão');
+    } catch (err) {
+      console.error(err);
     } finally {
       setSalvando(false);
     }
@@ -66,9 +63,7 @@ export function StartTestSession() {
       <AppHeader>
         <AppHeader.Brand />
         <AppHeader.Nav>
-          <AppHeader.NavBack to="/dashboard"><ArrowLeft size={16} /> VOLTAR_AO_TERMINAL</AppHeader.NavBack>
-          <AppHeader.NavDivider />
-          <AppHeader.NavLabel>INICIAR_SESSÃO // RF_TEST</AppHeader.NavLabel>
+          <AppHeader.NavLabel>INICIAR_SESSÃO</AppHeader.NavLabel>
         </AppHeader.Nav>
       </AppHeader>
       <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-8">
@@ -89,9 +84,8 @@ export function StartTestSession() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-0">
-            {erro && <div className="mb-6 bg-red-500/10 border border-red-500/30 p-4 font-mono text-xs text-red-400">{erro}</div>}
             <div className="bg-[#1C1D22] border border-[#2C2D35] p-6 sm:p-8">
-              <SectionHeader title="SELECIONAR PROJETO E VERSÃO" code="RF01" icon={Play} iconColor="text-[#D4FF00]" />
+              <SectionHeader title="SELECIONAR PROJETO E VERSÃO" code="" icon={Play} iconColor="text-[#D4FF00]" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="font-mono text-[10px] font-bold uppercase text-zinc-400 tracking-widest flex items-center gap-2">
@@ -130,7 +124,7 @@ export function StartTestSession() {
               )}
             </div>
             <div className="bg-[#1C1D22] border-x border-[#2C2D35] border-b p-6 sm:p-8">
-              <SectionHeader title="AMBIENTE DE TESTE" code="MODEL_SESSAO" icon={Monitor} iconColor="text-[#D4FF00]" />
+              <SectionHeader title="AMBIENTE DE TESTE" code="" icon={Monitor} iconColor="text-[#D4FF00]" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="font-mono text-[10px] font-bold uppercase text-zinc-400 tracking-widest flex items-center gap-2">

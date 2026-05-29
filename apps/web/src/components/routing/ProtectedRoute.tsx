@@ -22,8 +22,7 @@ export function ProtectedRoute({ children, tiposPermitidos }: Props) {
   if (!isAuthenticated) return <Navigate to="/" replace />;
 
   if (tiposPermitidos && user && !tiposPermitidos.includes(user.tipo)) {
-    const destino = user.tipo === 'desenvolvedor' ? '/dev' : '/dashboard';
-    return <Navigate to={destino} replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

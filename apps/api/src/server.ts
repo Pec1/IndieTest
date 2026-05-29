@@ -4,6 +4,7 @@ import fastifyCookie = require('@fastify/cookie');
 import fastifyCors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import fastifyMultipart from '@fastify/multipart';
+import rateLimit from '@fastify/rate-limit';
 import path from 'node:path';
 
 // Rotas de Usuario / Autenticação
@@ -54,6 +55,7 @@ const app = fastify().withTypeProvider<ZodTypeProvider>();
 app.register(fastifyCors, {
         origin: [
         'http://localhost:5173',
+        'http://localhost:5174',
         'https://congenial-tribble-66vjxpj444gc4ppq-5173.app.github.dev',
         /\.app\.github\.dev$/,
     ],
@@ -68,6 +70,10 @@ app.register(fastifyCookie, {
 });
 
 app.register(fastifyMultipart);
+
+app.register(rateLimit, {
+    global: false,
+});
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);

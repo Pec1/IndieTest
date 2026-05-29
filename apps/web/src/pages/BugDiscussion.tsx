@@ -5,7 +5,6 @@ import { getBug, atualizarStatusBug, criarRespostaBug, type Bug } from '../api/b
 import { useAuth } from '../contexts/AuthContext';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
-import { TechnicalLabel } from '../components/ui/TechnicalLabel';
 import { AppHeader } from '../components/ui/AppHeader';
 import { SeverityBadge } from '../components/shared/SeverityBadge';
 
@@ -39,7 +38,6 @@ export function BugDiscussion() {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const [erro, setErro] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const podeAlterarStatus = user?.tipo === 'desenvolvedor' || user?.tipo === 'administrador';
@@ -59,8 +57,8 @@ export function BugDiscussion() {
       await atualizarStatusBug(id, novoStatus);
       setCurrentStatus(novoStatus);
       setShowStatusDropdown(false);
-    } catch (e) {
-      setErro(e instanceof ApiError ? e.message : 'Erro ao alterar status');
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -68,14 +66,13 @@ export function BugDiscussion() {
     e.preventDefault();
     if (!newMessage.trim() || !id) return;
     setEnviando(true);
-    setErro('');
     try {
       const { resposta } = await criarRespostaBug(id, { mensagem: newMessage });
       setBug(prev => prev ? { ...prev, respostas: [...(prev.respostas || []), resposta] } : prev);
       setNewMessage('');
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-    } catch (e) {
-      setErro(e instanceof ApiError ? e.message : 'Erro ao enviar mensagem');
+    } catch (err) {
+      console.error(err);
     } finally {
       setEnviando(false);
     }
@@ -99,7 +96,7 @@ export function BugDiscussion() {
         <AppHeader.Nav>
           <AppHeader.NavBack to="/bug-tracker"><ArrowLeft size={16} /> VOLTAR_TRACKER</AppHeader.NavBack>
           <AppHeader.NavDivider />
-          <AppHeader.NavLabel>BUG_DISCUSSION // RF15</AppHeader.NavLabel>
+          <AppHeader.NavLabel>BUG_DISCUSSION</AppHeader.NavLabel>
         </AppHeader.Nav>
       </AppHeader>
       <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8">
@@ -129,7 +126,6 @@ export function BugDiscussion() {
                   <FileWarning className="text-[#4A3AFF]" size={20} />
                   <h3 className="font-display font-black text-white uppercase tracking-tight">Metadados e Diagnóstico</h3>
                 </div>
-                <TechnicalLabel className="text-[#4A3AFF] bg-[#4A3AFF]/10 border-[#4A3AFF]/30">RN02</TechnicalLabel>
               </div>
               <div className="p-6">
                 <div className="font-mono text-[10px] text-zinc-500 uppercase mb-3 flex items-center gap-2">
@@ -165,7 +161,6 @@ export function BugDiscussion() {
                     <ImageIcon className="text-[#4A3AFF]" size={20} />
                     <h3 className="font-display font-black text-white uppercase tracking-tight">Repositório de Evidências</h3>
                   </div>
-                  <TechnicalLabel className="text-[#4A3AFF] bg-[#4A3AFF]/10 border-[#4A3AFF]/30">RF08</TechnicalLabel>
                 </div>
                 <div className="p-6 grid grid-cols-2 gap-3">
                   {bug.anexos.map(a => (
@@ -186,7 +181,6 @@ export function BugDiscussion() {
                   <MessageSquare className="text-[#4A3AFF]" size={20} />
                   <h3 className="font-display font-black text-white uppercase tracking-tight">Mural de Discussão Técnica</h3>
                 </div>
-                <TechnicalLabel className="text-[#4A3AFF] bg-[#4A3AFF]/10 border-[#4A3AFF]/30">RF15</TechnicalLabel>
               </div>
               <div className="p-6 space-y-4">
                 {(!bug.respostas || bug.respostas.length === 0) && (
@@ -210,7 +204,6 @@ export function BugDiscussion() {
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
-                {erro && <div className="bg-red-500/10 border border-red-500/30 p-3 font-mono text-xs text-red-400">{erro}</div>}
                 {ehDesenvolvedor && (
                   <form onSubmit={handleSendMessage} className="mt-4">
                     <div className="border border-[#2C2D35] bg-[#0F1013] focus-within:border-[#4A3AFF] transition-colors">

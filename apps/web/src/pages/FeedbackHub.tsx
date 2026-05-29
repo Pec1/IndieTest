@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Crosshair, ArrowLeft, MessageSquare, Star, Filter } from 'lucide-react';
-import { Link, useNavigate } from 'react-router';
+import { Crosshair, MessageSquare, Star, Filter } from 'lucide-react';
+import { Link } from 'react-router';
 import { getBugs, type Bug } from '../api/bugs';
 import { cn } from '../lib/utils';
 import { TechnicalLabel } from '../components/ui/TechnicalLabel';
@@ -18,7 +18,6 @@ function EnergyBlocks({ value, max = 5 }: { value: number; max?: number }) {
 }
 
 export function FeedbackHub() {
-  const navigate = useNavigate();
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [filtroProjeto, setFiltroProjeto] = useState('');
@@ -44,9 +43,7 @@ export function FeedbackHub() {
       <AppHeader>
         <AppHeader.Brand />
         <AppHeader.Nav>
-          <AppHeader.NavBack onClick={() => navigate(-1)}><ArrowLeft size={16} /> VOLTAR</AppHeader.NavBack>
-          <AppHeader.NavDivider />
-          <AppHeader.NavLabel>FEEDBACK_HUB // RF14</AppHeader.NavLabel>
+          <AppHeader.NavLabel>FEEDBACK_HUB</AppHeader.NavLabel>
         </AppHeader.Nav>
       </AppHeader>
       <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-8">

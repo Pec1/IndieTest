@@ -64,9 +64,6 @@ export function Notifications() {
   const [carregando, setCarregando] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState<NotifStatus | ''>('');
 
-  const isDev = user?.tipo === 'desenvolvedor';
-  const backLink = isDev ? '/dev' : '/dashboard';
-
   const carregar = useCallback(() => {
     setCarregando(true);
     getNotificacoes({ limit: 50 })
@@ -101,9 +98,7 @@ export function Notifications() {
         <AppHeader.Brand />
         <AppHeader.Nav className="justify-between">
           <div className="flex items-center gap-4">
-            <AppHeader.NavBack to={backLink}><ArrowLeft size={16} /> VOLTAR_AO_TERMINAL</AppHeader.NavBack>
-            <AppHeader.NavDivider />
-            <AppHeader.NavLabel>NOTIFICAÇÕES // RF_NOTIF</AppHeader.NavLabel>
+            <AppHeader.NavLabel>NOTIFICAÇÕES</AppHeader.NavLabel>
           </div>
           {pendentes > 0 && (
             <button type="button" onClick={marcarTodasLidas}

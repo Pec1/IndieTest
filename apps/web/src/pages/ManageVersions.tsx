@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, CheckCircle2, FileCode } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Plus, CheckCircle2, FileCode } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router';
 import { getProjeto, criarVersao, type Projeto, type Versao } from '../api/projetos';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
-import { TechnicalLabel } from '../components/ui/TechnicalLabel';
 import { AppHeader } from '../components/ui/AppHeader';
 import { VersionCard } from '../components/shared/VersionCard';
 
@@ -17,7 +16,6 @@ export function ManageVersions() {
   const [novoChangelog, setNovoChangelog] = useState('');
   const [novoStatus, setNovoStatus] = useState('ativa');
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
   const [showForm, setShowForm] = useState(false);
 
@@ -32,7 +30,6 @@ export function ManageVersions() {
   async function handleAdicionarVersao(e: React.FormEvent) {
     e.preventDefault();
     if (!id || !novaVersao.trim()) return;
-    setErro('');
     setSucesso('');
     setSalvando(true);
     try {
@@ -44,8 +41,8 @@ export function ManageVersions() {
       setSucesso(`Versão ${versao.numeroVersao} publicada com sucesso!`);
       setShowForm(false);
       setTimeout(() => setSucesso(''), 3000);
-    } catch (e) {
-      setErro(e instanceof ApiError ? e.message : 'Erro ao criar versão');
+    } catch (err) {
+      console.error(err);
     } finally {
       setSalvando(false);
     }
@@ -68,9 +65,7 @@ export function ManageVersions() {
         <AppHeader.Brand />
         <AppHeader.Nav className="justify-between">
           <div className="flex items-center gap-4">
-            <AppHeader.NavBack to={`/project/${id}`}><ArrowLeft size={16} /> VOLTAR_AO_PROJETO</AppHeader.NavBack>
-            <AppHeader.NavDivider />
-            <AppHeader.NavLabel>GERENCIAR_VERSÕES // RF05</AppHeader.NavLabel>
+            <AppHeader.NavLabel>GERENCIAR_VERSÕES</AppHeader.NavLabel>
           </div>
           <button type="button" onClick={() => setShowForm(!showForm)}
             className="font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#D4FF00] text-black hover:bg-[#e2ff4d] transition-all text-xs flex items-center gap-2 shadow-[2px_2px_0_0_#4A3AFF]">
@@ -94,9 +89,7 @@ export function ManageVersions() {
           <div className="mb-8 bg-[#1C1D22] border-2 border-[#D4FF00] p-6">
             <div className="flex items-center justify-between border-b border-[#2C2D35] pb-4 mb-6">
               <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">NOVA_BUILD</h2>
-              <TechnicalLabel>RF05_VERSAO</TechnicalLabel>
             </div>
-            {erro && <div className="mb-4 bg-red-500/10 border border-red-500/30 p-3 font-mono text-xs text-red-400">{erro}</div>}
             <form onSubmit={handleAdicionarVersao} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">

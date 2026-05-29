@@ -5,7 +5,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { getProjetos, type Projeto } from '../api/projetos';
 import { getBugs, type Bug as BugType } from '../api/bugs';
 import { cn } from '../lib/utils';
-import { TechnicalLabel } from '../components/ui/TechnicalLabel';
 import { AppHeader } from '../components/ui/AppHeader';
 
 function Sparkline({ data, color = "#4A3AFF" }: { data: number[]; color?: string }) {
@@ -27,8 +26,7 @@ function Sparkline({ data, color = "#4A3AFF" }: { data: number[]; color?: string
 }
 
 function DevHeader() {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   return (
     <AppHeader className="border-white/20">
       <AppHeader.Brand className="border-white/20" />
@@ -51,10 +49,6 @@ function DevHeader() {
           <Settings size={20} className="text-zinc-500 group-hover:text-[#D4FF00] transition-colors" strokeWidth={1.5} />
         </Link>
       </AppHeader.InfoBar>
-      <AppHeader.Actions className="border-white/20">
-        <Link to="/dashboard" className="font-mono text-[10px] text-zinc-400 hover:text-white border border-white/10 hover:border-white/30 px-3 py-2 transition-colors">TESTADOR</Link>
-        <button onClick={() => { signOut(); navigate('/'); }} className="font-display font-bold text-xs text-red-400 hover:text-red-300 border border-red-400/20 hover:border-red-300/30 px-3 py-2 transition-colors">SAIR</button>
-      </AppHeader.Actions>
     </AppHeader>
   );
 }
@@ -73,9 +67,6 @@ function MetricsGrid({ bugs, projetos }: { bugs: BugType[]; projetos: Projeto[] 
 
   return (
     <section className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <TechnicalLabel>RF13_METRICS</TechnicalLabel>
-      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border border-white/20">
         {metrics.map((metric, i) => {
           const Icon = metric.icon;
@@ -108,7 +99,6 @@ function CriticalHighlight({ bugs }: { bugs: BugType[] }) {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <span className="font-display font-black text-2xl text-white uppercase tracking-tight">Atenção Imediata</span>
-            <TechnicalLabel className="bg-red-500/10 text-red-500 border-red-500/30">RN06_CRITICAL</TechnicalLabel>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
             {criticos.map(bug => (

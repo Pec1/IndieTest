@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Crosshair, ArrowLeft, Search, Bug, AlertTriangle, X, Image as ImageIcon, MessageSquare, Shield, ChevronRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router';
+import { Crosshair, Search, Bug, AlertTriangle, X, Image as ImageIcon, MessageSquare, Shield, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router';
 import { getBugs, atualizarStatusBug, type Bug as BugType, type Paginacao } from '../api/bugs';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
-import { TechnicalLabel } from '../components/ui/TechnicalLabel';
 import { AppHeader } from '../components/ui/AppHeader';
 import { SeverityBadge } from '../components/shared/SeverityBadge';
 import { BugStatusBadge } from '../components/shared/BugStatusBadge';
@@ -136,7 +135,6 @@ function BugDetailPanel({ bug, onClose, podeAlterarStatus }: { bug: BugType; onC
 }
 
 export function BugTracker() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [bugs, setBugs] = useState<BugType[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -178,9 +176,7 @@ export function BugTracker() {
         <AppHeader.Brand />
         <AppHeader.Nav className="justify-between">
           <div className="flex items-center gap-4">
-            <AppHeader.NavBack onClick={() => navigate(-1)}><ArrowLeft size={16} /> VOLTAR</AppHeader.NavBack>
-            <AppHeader.NavDivider />
-            <AppHeader.NavLabel>BUG_TRACKER // RF09</AppHeader.NavLabel>
+            <AppHeader.NavLabel>BUG_TRACKER</AppHeader.NavLabel>
           </div>
           <Link to="/report-bug" className="hidden sm:flex font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#4A3AFF] text-white hover:bg-white hover:text-black transition-all text-xs items-center gap-2">
             <Bug size={14} /> REPORTAR BUG

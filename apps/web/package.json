@@ -16,6 +16,7 @@
     "@radix-ui/react-select": "^2.1.6",
     "@radix-ui/react-switch": "^1.1.2",
     "@radix-ui/react-toast": "^1.2.6",
+    "@rollup/rollup-win32-x64-msvc": "^4.60.4",
     "clsx": "^2.1.1",
     "lucide-react": "^0.487.0",
     "react": "^18.3.1",

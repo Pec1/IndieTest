@@ -123,3 +123,40 @@ Authorization: Bearer <TOKEN_DEV>
     "mensagem": "Vamos investigar e voltar com uma correção",
     "visivelTestador": true
 }
+
+### 16. Enviar anexo de bug
+POST http://localhost:3333/bugs/<UUID_DO_BUG>/anexos
+Authorization: Bearer <TOKEN>
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="file"; filename="screenshot.png"
+Content-Type: image/png
+
+< ./screenshot.png
+------Boundary--
+
+### 17. Listar notificações
+GET http://localhost:3333/notificacoes
+Authorization: Bearer <TOKEN>
+
+### 18. Listar notificações não lidas
+GET http://localhost:3333/notificacoes?status=pendente
+Authorization: Bearer <TOKEN>
+
+### 19. Marcar notificação como lida
+PATCH http://localhost:3333/notificacoes/<UUID_DA_NOTIFICACAO>/lida
+Authorization: Bearer <TOKEN>
+
+### 20. Listar convites do usuário logado
+GET http://localhost:3333/convites
+Authorization: Bearer <TOKEN>
+
+### 21. Aceitar ou recusar convite
+PATCH http://localhost:3333/convites/<UUID_DO_CONVITE>
+Content-Type: application/json
+Authorization: Bearer <TOKEN>
+
+{
+    "acao": "aceitar"
+}

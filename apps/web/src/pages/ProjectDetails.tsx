@@ -4,7 +4,6 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { getProjeto, type Projeto, type Versao } from '../api/projetos';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
-import { TechnicalLabel } from '../components/ui/TechnicalLabel';
 import { AppHeader } from '../components/ui/AppHeader';
 import { VersionCard } from '../components/shared/VersionCard';
 
@@ -46,7 +45,7 @@ export function ProjectDetails() {
           <div className="flex items-center gap-4">
             <AppHeader.NavBack onClick={() => navigate(-1)}><ArrowLeft size={16} /> VOLTAR_DASHBOARD</AppHeader.NavBack>
             <AppHeader.NavDivider />
-            <AppHeader.NavLabel>DETALHES_PROJETO // RF06</AppHeader.NavLabel>
+            <AppHeader.NavLabel>DETALHES_PROJETO</AppHeader.NavLabel>
           </div>
           {user?.tipo === 'desenvolvedor' && (
             <Link to={`/dev/project/${id}/versoes`} className="hidden sm:flex font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#D4FF00] text-black hover:bg-[#e2ff4d] transition-all text-xs items-center gap-2">
@@ -94,7 +93,6 @@ export function ProjectDetails() {
                       <div className="font-mono text-[10px] text-zinc-500 uppercase mb-2 flex items-center gap-2"><Download size={14} />PAINEL_DE_DOWNLOAD</div>
                       <h2 className="font-display font-black text-3xl text-white uppercase tracking-tight">Build Ativa</h2>
                     </div>
-                    <TechnicalLabel className="text-orange-500 bg-orange-500/10 border-orange-500/30">RF05_BUILD</TechnicalLabel>
                   </div>
                   <div className="bg-[#1C1D22] border border-[#2C2D35] p-6 mb-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -132,7 +130,6 @@ export function ProjectDetails() {
                     <FileCode className="text-[#4A3AFF]" size={20} />
                     <h2 className="font-display font-black text-white uppercase text-lg tracking-tight">Especificações e Escopo</h2>
                   </div>
-                  <TechnicalLabel className="text-[#4A3AFF] bg-[#4A3AFF]/10 border-[#4A3AFF]/30">MODEL_PROJETO</TechnicalLabel>
                 </div>
               </div>
               <div className="p-6">

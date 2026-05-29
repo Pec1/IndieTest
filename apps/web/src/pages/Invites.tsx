@@ -27,7 +27,6 @@ export function Invites() {
   const [convites, setConvites] = useState<Convite[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [respondendo, setRespondendo] = useState<string | null>(null);
-  const [erro, setErro] = useState('');
 
   const carregar = useCallback(() => {
     setCarregando(true);
@@ -41,12 +40,11 @@ export function Invites() {
 
   async function handleResponder(id: string, acao: 'aceitar' | 'recusar') {
     setRespondendo(id);
-    setErro('');
     try {
       const { convite: atualizado } = await responderConvite(id, acao);
       setConvites(prev => prev.map(c => c.id === id ? { ...c, statusConvite: atualizado.statusConvite } : c));
-    } catch (e) {
-      setErro(e instanceof ApiError ? e.message : 'Erro ao responder convite');
+    } catch (err) {
+      console.error(err);
     } finally {
       setRespondendo(null);
     }
@@ -60,9 +58,7 @@ export function Invites() {
       <AppHeader>
         <AppHeader.Brand />
         <AppHeader.Nav>
-          <AppHeader.NavBack to="/dashboard"><ArrowLeft size={16} /> VOLTAR_AO_TERMINAL</AppHeader.NavBack>
-          <AppHeader.NavDivider />
-          <AppHeader.NavLabel>CONVITES // RF_INVITE</AppHeader.NavLabel>
+          <AppHeader.NavLabel>CONVITES</AppHeader.NavLabel>
         </AppHeader.Nav>
       </AppHeader>
       <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-8">
@@ -72,10 +68,6 @@ export function Invites() {
           </h1>
           <p className="font-mono text-xs text-zinc-500 mt-2">GERENCIAMENTO DE AUTORIZAÇÕES DE ACESSO A PROJETOS.</p>
         </div>
-
-        {erro && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/30 p-4 font-mono text-xs text-red-400">{erro}</div>
-        )}
 
         <StatsGrid cols={3}>
           <StatsGrid.Item label="PENDENTES" value={pendentes.length} color="text-[#D4FF00]" />

@@ -5,7 +5,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { getProjetos, type Projeto } from '../api/projetos';
 import { getAtividades, type Atividade } from '../api/atividades';
 import { cn } from '../lib/utils';
-import { TechnicalLabel } from '../components/ui/TechnicalLabel';
 import { AppHeader } from '../components/ui/AppHeader';
 
 function ZapIcon() {
@@ -50,8 +49,19 @@ function StructuralHeader() {
           <Settings size={20} className="text-zinc-500 group-hover:text-[#D4FF00] transition-colors" strokeWidth={1.5} />
         </Link>
       </AppHeader.InfoBar>
-      <AppHeader.Actions className="px-6 bg-[#4A3AFF] hover:bg-[#382bd6] transition-colors">
-        <button onClick={handleSignOut} className="font-display font-bold text-white tracking-widest uppercase text-sm w-full h-full flex items-center justify-center">
+      <AppHeader.Actions>
+        {user?.tipo === 'desenvolvedor' && (
+          <Link
+            to="/dev"
+            className="flex-1 flex items-center justify-center font-display font-bold text-xs text-[#D4FF00] hover:text-black hover:bg-[#D4FF00] border-r border-[#2C2D35] hover:border-[#D4FF00] px-6 transition-colors uppercase tracking-widest"
+          >
+            ÁREA DEV
+          </Link>
+        )}
+        <button
+          onClick={handleSignOut}
+          className="flex-1 flex items-center justify-center font-display font-bold text-white tracking-widest uppercase text-sm px-8 bg-[#4A3AFF] hover:bg-[#382bd6] transition-colors"
+        >
           SAIR // LOGOUT
         </button>
       </AppHeader.Actions>
@@ -67,7 +77,6 @@ function TopProjects({ projetos }: { projetos: Projeto[] }) {
         <h2 className="text-2xl font-display font-black tracking-tight text-white uppercase flex items-center gap-2">
           <ZapIcon /> Projetos em Foco <span className="text-[#4A3AFF]">[TOP 5]</span>
         </h2>
-        <TechnicalLabel className="hidden sm:flex">RF01_DASH</TechnicalLabel>
       </div>
       {top5.length === 0 ? (
         <div className="border border-[#2C2D35] bg-[#1C1D22] p-12 text-center">
@@ -121,7 +130,6 @@ function ActiveTerminal({ projetos }: { projetos: Projeto[] }) {
           <Link to="/report-bug" className="hidden sm:flex font-display font-bold uppercase tracking-widest px-4 py-1.5 bg-[#4A3AFF] text-white hover:bg-white hover:text-black transition-all text-xs items-center gap-2">
             <Activity size={14} strokeWidth={2} /> REPORTAR_FALHA
           </Link>
-          <TechnicalLabel>RF03_PROJECTS</TechnicalLabel>
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -184,7 +192,6 @@ function DataIngestionFeed() {
       <div className="p-4 border-b border-[#2C2D35] bg-[#1C1D22]">
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-lg font-display font-black tracking-tight text-white uppercase">LOG_DE_ATIVIDADE</h2>
-          <TechnicalLabel className="text-[#4A3AFF] bg-[#4A3AFF]/10 border-[#4A3AFF]/20">RF12</TechnicalLabel>
         </div>
         <p className="font-mono text-[10px] text-zinc-500">EVENTOS RECENTES DA PLATAFORMA</p>
       </div>

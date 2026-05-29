@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, apiUpload } from './client';
 
 export interface Bug {
   id: string;
@@ -95,4 +95,13 @@ export async function criarRespostaBug(
     method: 'POST',
     body: JSON.stringify(body),
   });
+}
+
+export async function uploadBugAnexo(
+  bugId: string,
+  arquivo: File
+): Promise<{ message: string; anexo: NonNullable<Bug['anexos']>[0] }> {
+  const formData = new FormData();
+  formData.append('file', arquivo);
+  return apiUpload(`/bugs/${bugId}/anexos`, formData);
 }
