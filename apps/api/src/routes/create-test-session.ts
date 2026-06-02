@@ -28,6 +28,17 @@ export async function createTestSession(app: FastifyInstance) {
             return reply.status(404).send({ message: 'Versão não encontrada' })
         }
 
+        const conviteAceito = await prisma.convite.findFirst({
+            where: {
+                testadorId: testador.id,
+                projetoId: versao.projetoId,
+                statusConvite: 'aceito',
+            },
+        })
+        if (!conviteAceito) {
+            return reply.status(403).send({ message: 'Você não tem um convite aceito para testar este projeto' })
+        }
+
         const sessao = await prisma.testeSessao.create({
             data: {
                 versaoId,

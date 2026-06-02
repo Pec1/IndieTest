@@ -14,11 +14,10 @@ export async function createBug(app: FastifyInstance) {
                 descricao: z.string().min(10),
                 tipo: z.enum(['Bug', 'Melhoria', 'Outro']),
                 severidade: z.enum(['Baixa', 'Media', 'Alta', 'Critica']),
-                status: z.string().default('aberto'),
             }),
         },
     }, async (request: CRequest, reply) => {
-        const { testeSessaoId, titulo, descricao, tipo, severidade, status } = request.body
+        const { testeSessaoId, titulo, descricao, tipo, severidade } = request.body
         const userId = request.user.userId
 
         // Verifica que a sessão pertence ao testador logado
@@ -56,7 +55,7 @@ export async function createBug(app: FastifyInstance) {
                 descricao,
                 tipo,
                 severidade,
-                status,
+                status: 'aberto',
                 testeSessaoId,
             }
         })

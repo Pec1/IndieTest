@@ -67,8 +67,12 @@ export async function login(app: FastifyInstance) {
         );
 
         const isProduction = process.env.NODE_ENV === 'production';
-        const secureFlag = isProduction ? '; Secure' : '';
-        reply.header('Set-Cookie', `accessToken=${token}; Path=/; HttpOnly; SameSite=Strict${secureFlag}`);
+        reply.setCookie('accessToken', token, {
+            path: '/',
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: isProduction,
+        });
 
         return reply.status(200).send({
             message: 'Login bem-sucedido',
