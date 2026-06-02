@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Crosshair, ArrowLeft, Bell, BellOff, CheckCheck, AlertTriangle, Info, Bug, Mail, Filter } from 'lucide-react';
+import { Bell, BellOff, CheckCheck, AlertTriangle, Info, Bug, Mail, Filter } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { getNotificacoes, marcarNotificacaoLida, type Notificacao } from '../api/notificacoes';
@@ -14,12 +14,12 @@ const TIPO_CONFIG: Record<string, { icon: React.ElementType; color: string; labe
   bug_critico: { icon: Bug, color: 'text-red-400', label: 'BUG_CRÍTICO', bg: 'bg-red-500/10 border-red-500/30' },
   convite: { icon: Mail, color: 'text-[#4A3AFF]', label: 'CONVITE', bg: 'bg-[#4A3AFF]/10 border-[#4A3AFF]/30' },
   feedback: { icon: Info, color: 'text-[#D4FF00]', label: 'FEEDBACK', bg: 'bg-[#D4FF00]/10 border-[#D4FF00]/30' },
-  sistema: { icon: AlertTriangle, color: 'text-zinc-400', label: 'SISTEMA', bg: 'bg-zinc-500/10 border-zinc-500/30' },
+  sistema: { icon: AlertTriangle, color: 'text-it-muted', label: 'SISTEMA', bg: 'bg-zinc-500/10 border-zinc-500/30' },
   atualizacao: { icon: CheckCheck, color: 'text-[#10b981]', label: 'ATUALIZAÇÃO', bg: 'bg-[#10b981]/10 border-[#10b981]/30' },
 };
 
 function getTipoConfig(tipo: string) {
-  return TIPO_CONFIG[tipo] ?? { icon: Bell, color: 'text-zinc-400', label: tipo.toUpperCase(), bg: 'bg-zinc-500/10 border-zinc-500/30' };
+  return TIPO_CONFIG[tipo] ?? { icon: Bell, color: 'text-it-muted', label: tipo.toUpperCase(), bg: 'bg-zinc-500/10 border-zinc-500/30' };
 }
 
 function NotifCard({ notif, onMarcarLida }: { notif: Notificacao; onMarcarLida: (id: string) => void }) {
@@ -29,7 +29,7 @@ function NotifCard({ notif, onMarcarLida }: { notif: Notificacao; onMarcarLida: 
   return (
     <div className={cn(
       "relative border p-4 transition-all",
-      isNova ? "border-[#2C2D35] bg-[#1C1D22] border-l-4 border-l-[#D4FF00]" : "border-[#2C2D35] bg-[#1C1D22] opacity-60"
+      isNova ? "border-it-border bg-it-surface border-l-4 border-l-[#D4FF00]" : "border-it-border bg-it-surface opacity-60"
     )}>
       {isNova && (
         <div className="absolute top-3 right-3 w-2 h-2 bg-[#D4FF00] rounded-full animate-pulse" />
@@ -41,15 +41,15 @@ function NotifCard({ notif, onMarcarLida }: { notif: Notificacao; onMarcarLida: 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className={cn("font-mono text-[10px] font-bold px-1 border", bg, color)}>{label}</span>
-            <span className="font-mono text-[10px] text-zinc-600">
+            <span className="font-mono text-[10px] text-it-muted">
               {new Date(notif.dataCriacao).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
-          <p className="font-mono text-xs text-zinc-300 leading-relaxed">{notif.mensagem}</p>
+          <p className="font-mono text-xs text-it-subtle leading-relaxed">{notif.mensagem}</p>
         </div>
         {isNova && (
           <button type="button" onClick={() => onMarcarLida(notif.id)}
-            className="flex-shrink-0 font-mono text-[10px] text-zinc-500 hover:text-[#D4FF00] border border-[#2C2D35] hover:border-[#D4FF00] px-2 py-1 transition-colors">
+            className="flex-shrink-0 font-mono text-[10px] text-it-muted hover:text-[#D4FF00] border border-it-border hover:border-[#D4FF00] px-2 py-1 transition-colors">
             MARCAR_LIDA
           </button>
         )}
@@ -63,9 +63,6 @@ export function Notifications() {
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState<NotifStatus | ''>('');
-
-  const isDev = user?.tipo === 'desenvolvedor';
-  const backLink = isDev ? '/dev' : '/dashboard';
 
   const carregar = useCallback(() => {
     setCarregando(true);
@@ -96,21 +93,20 @@ export function Notifications() {
   const pendentes = notificacoes.filter(n => n.status === 'pendente').length;
 
   return (
-    <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
+    <div className="min-h-screen bg-it-page text-it-text selection:bg-[#D4FF00] selection:text-black flex flex-col">
       <AppHeader>
         <AppHeader.Brand />
         <AppHeader.Nav className="justify-between">
-          <div className="flex items-center gap-4">
-            <AppHeader.NavBack to={backLink}><ArrowLeft size={16} /> VOLTAR_AO_TERMINAL</AppHeader.NavBack>
-            <AppHeader.NavDivider />
-            <AppHeader.NavLabel>NOTIFICAÇÕES // RF_NOTIF</AppHeader.NavLabel>
+          <AppHeader.NavLabel>NOTIFICAÇÕES</AppHeader.NavLabel>
+          <div className="flex items-stretch shrink-0">
+            {pendentes > 0 && (
+              <button type="button" onClick={marcarTodasLidas}
+                className="font-mono text-[10px] text-it-muted hover:text-it-text border border-it-border hover:border-[#D4FF00] px-3 py-1.5 transition-colors flex items-center gap-2 self-center mx-2">
+                <CheckCheck size={12} /> MARCAR_TODAS_COMO_LIDAS
+              </button>
+            )}
+            <AppHeader.Utilities />
           </div>
-          {pendentes > 0 && (
-            <button type="button" onClick={marcarTodasLidas}
-              className="font-mono text-[10px] text-zinc-400 hover:text-white border border-[#2C2D35] hover:border-[#D4FF00] px-3 py-1.5 transition-colors flex items-center gap-2">
-              <CheckCheck size={12} /> MARCAR_TODAS_COMO_LIDAS
-            </button>
-          )}
         </AppHeader.Nav>
       </AppHeader>
 
@@ -119,24 +115,24 @@ export function Notifications() {
           <h1 className="text-5xl font-display font-black uppercase tracking-tighter">
             Central de <span className="text-[#4A3AFF]">Notificações</span>
           </h1>
-          <p className="font-mono text-xs text-zinc-500 mt-2 uppercase">SISTEMA DE ALERTAS E COMUNICAÇÕES DO INDIETEST.</p>
+          <p className="font-mono text-xs text-it-muted mt-2 uppercase">SISTEMA DE ALERTAS E COMUNICAÇÕES DO INDIETEST.</p>
         </div>
 
         <StatsGrid cols={3}>
           <StatsGrid.Item label="NÃO LIDAS" value={pendentes} color="text-[#D4FF00]" />
           <StatsGrid.Item label="TOTAL" value={notificacoes.length} />
-          <StatsGrid.Item label="LIDAS" value={notificacoes.filter(n => n.status === 'lida').length} color="text-zinc-500" />
+          <StatsGrid.Item label="LIDAS" value={notificacoes.filter(n => n.status === 'lida').length} color="text-it-muted" />
         </StatsGrid>
 
         <div className="flex flex-wrap items-center gap-4 mb-6">
-          <div className="flex items-center gap-2 font-mono text-xs text-zinc-500">
+          <div className="flex items-center gap-2 font-mono text-xs text-it-muted">
             <Filter size={14} /> FILTROS:
           </div>
           <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value as NotifStatus | '')}
-            className="bg-[#1C1D22] border border-[#2C2D35] text-white py-2 px-4 font-mono text-xs outline-none focus:border-[#D4FF00] appearance-none cursor-pointer">
+            className="bg-it-surface border border-it-border text-it-text py-2 px-4 font-mono text-xs outline-none focus:border-[#D4FF00] appearance-none cursor-pointer">
             <option value="">TODOS OS STATUS</option>
-            <option value="pendente" className="bg-[#1C1D22]">NÃO LIDAS</option>
-            <option value="lida" className="bg-[#1C1D22]">LIDAS</option>
+            <option value="pendente" className="bg-it-surface">NÃO LIDAS</option>
+            <option value="lida" className="bg-it-surface">LIDAS</option>
           </select>
           <span className="font-mono text-[10px] text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20">{filtradas.length} REGISTROS</span>
         </div>
@@ -146,10 +142,10 @@ export function Notifications() {
             <p className="font-mono text-[#D4FF00] animate-pulse tracking-widest">CARREGANDO_NOTIFICAÇÕES...</p>
           </div>
         ) : filtradas.length === 0 ? (
-          <div className="border border-[#2C2D35] bg-[#1C1D22] p-16 text-center">
+          <div className="border border-it-border bg-it-surface p-16 text-center">
             <BellOff size={48} className="text-zinc-700 mx-auto mb-4" />
-            <p className="font-mono text-sm text-zinc-500 uppercase">[NENHUMA_NOTIFICAÇÃO_ENCONTRADA]</p>
-            <p className="font-mono text-xs text-zinc-600 mt-2 max-w-md mx-auto">
+            <p className="font-mono text-sm text-it-muted uppercase">[NENHUMA_NOTIFICAÇÃO_ENCONTRADA]</p>
+            <p className="font-mono text-xs text-it-muted mt-2 max-w-md mx-auto">
               {filtroStatus
                 ? 'Nenhuma notificação corresponde ao filtro selecionado.'
                 : 'Você não possui notificações no momento.'}
@@ -159,9 +155,9 @@ export function Notifications() {
           <div className="space-y-2">
             {filtradas.filter(n => n.status === 'pendente').length > 0 && (
               <div className="mb-4">
-                <div className="flex items-center gap-2 border-b border-[#2C2D35] pb-2 mb-3">
+                <div className="flex items-center gap-2 border-b border-it-border pb-2 mb-3">
                   <Bell size={16} className="text-[#D4FF00]" />
-                  <h2 className="font-display font-black text-sm text-white uppercase tracking-widest">NÃO LIDAS</h2>
+                  <h2 className="font-display font-black text-sm text-it-text uppercase tracking-widest">NÃO LIDAS</h2>
                   <span className="font-mono text-[10px] text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20">{filtradas.filter(n => n.status === 'pendente').length}</span>
                 </div>
                 <div className="space-y-2">
@@ -173,9 +169,9 @@ export function Notifications() {
             )}
             {filtradas.filter(n => n.status === 'lida').length > 0 && (
               <div>
-                <div className="flex items-center gap-2 border-b border-[#2C2D35] pb-2 mb-3">
-                  <CheckCheck size={16} className="text-zinc-500" />
-                  <h2 className="font-display font-black text-sm text-zinc-500 uppercase tracking-widest">HISTÓRICO</h2>
+                <div className="flex items-center gap-2 border-b border-it-border pb-2 mb-3">
+                  <CheckCheck size={16} className="text-it-muted" />
+                  <h2 className="font-display font-black text-sm text-it-muted uppercase tracking-widest">HISTÓRICO</h2>
                 </div>
                 <div className="space-y-2">
                   {filtradas.filter(n => n.status === 'lida').map(n => (
@@ -187,12 +183,12 @@ export function Notifications() {
           </div>
         )}
 
-        <div className="mt-8 bg-[#1C1D22] border border-[#2C2D35] p-6">
+        <div className="mt-8 bg-it-surface border border-it-border p-6">
           <div className="flex items-start gap-3">
             <Info size={18} className="text-[#4A3AFF] shrink-0 mt-0.5" />
             <div>
-              <span className="font-display font-bold text-sm text-white tracking-wide uppercase">Sobre Notificações</span>
-              <p className="font-mono text-[10px] text-zinc-400 mt-1 uppercase leading-relaxed">
+              <span className="font-display font-bold text-sm text-it-text tracking-wide uppercase">Sobre Notificações</span>
+              <p className="font-mono text-[10px] text-it-muted mt-1 uppercase leading-relaxed">
                 Notificações são geradas pelo sistema com base nas atividades dos seus projetos e sessões de teste.
               </p>
             </div>

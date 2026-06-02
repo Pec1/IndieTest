@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Crosshair, ArrowLeft, Mail, CheckCircle2, XCircle, Clock, Shield } from 'lucide-react';
+import { Mail, CheckCircle2, XCircle, Clock, Shield } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { getConvites, responderConvite, type Convite } from '../api/convites';
@@ -56,13 +56,12 @@ export function Invites() {
   const processados = convites.filter(c => c.statusConvite !== 'pendente');
 
   return (
-    <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
+    <div className="min-h-screen bg-it-page text-it-text selection:bg-[#D4FF00] selection:text-black flex flex-col">
       <AppHeader>
         <AppHeader.Brand />
-        <AppHeader.Nav>
-          <AppHeader.NavBack to="/dashboard"><ArrowLeft size={16} /> VOLTAR_AO_TERMINAL</AppHeader.NavBack>
-          <AppHeader.NavDivider />
-          <AppHeader.NavLabel>CONVITES // RF_INVITE</AppHeader.NavLabel>
+        <AppHeader.Nav className="justify-between gap-4">
+          <AppHeader.NavLabel>CONVITES</AppHeader.NavLabel>
+          <AppHeader.Utilities />
         </AppHeader.Nav>
       </AppHeader>
       <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-8">
@@ -70,7 +69,7 @@ export function Invites() {
           <h1 className="text-5xl font-display font-black uppercase tracking-tighter">
             Central de <span className="text-[#4A3AFF]">Convites</span>
           </h1>
-          <p className="font-mono text-xs text-zinc-500 mt-2">GERENCIAMENTO DE AUTORIZAÇÕES DE ACESSO A PROJETOS.</p>
+          <p className="font-mono text-xs text-it-muted mt-2">GERENCIAMENTO DE AUTORIZAÇÕES DE ACESSO A PROJETOS.</p>
         </div>
 
         {erro && (
@@ -88,10 +87,10 @@ export function Invites() {
             <p className="font-mono text-[#D4FF00] animate-pulse tracking-widest">CARREGANDO_CONVITES...</p>
           </div>
         ) : convites.length === 0 ? (
-          <div className="border border-[#2C2D35] bg-[#1C1D22] p-16 text-center">
+          <div className="border border-it-border bg-it-surface p-16 text-center">
             <Mail size={48} className="text-zinc-700 mx-auto mb-4" />
-            <p className="font-mono text-sm text-zinc-500 uppercase">[NENHUM_CONVITE_ENCONTRADO]</p>
-            <p className="font-mono text-xs text-zinc-600 mt-2 max-w-md mx-auto">
+            <p className="font-mono text-sm text-it-muted uppercase">[NENHUM_CONVITE_ENCONTRADO]</p>
+            <p className="font-mono text-xs text-it-muted mt-2 max-w-md mx-auto">
               Você ainda não recebeu convites. Quando um desenvolvedor convidar seu email ({user?.email}) para testar um projeto, ele aparecerá aqui.
             </p>
           </div>
@@ -99,26 +98,26 @@ export function Invites() {
           <div className="space-y-6">
             {pendentes.length > 0 && (
               <section>
-                <div className="flex items-center justify-between border-b border-[#2C2D35] pb-2 mb-4">
-                  <h2 className="text-xl font-display font-black text-white uppercase tracking-tight flex items-center gap-2">
+                <div className="flex items-center justify-between border-b border-it-border pb-2 mb-4">
+                  <h2 className="text-xl font-display font-black text-it-text uppercase tracking-tight flex items-center gap-2">
                     <Clock className="text-[#D4FF00]" size={20} /> CONVITES_PENDENTES
                   </h2>
                   <span className="font-mono text-[10px] text-[#D4FF00] bg-[#D4FF00]/10 px-1 border border-[#D4FF00]/20">{pendentes.length} AGUARDANDO</span>
                 </div>
                 <div className="space-y-3">
                   {pendentes.map(c => (
-                    <div key={c.id} className="bg-[#1C1D22] border-2 border-[#D4FF00] p-5">
+                    <div key={c.id} className="bg-it-surface border-2 border-[#D4FF00] p-5">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                          <div className="font-mono text-[10px] text-zinc-500 mb-1">
+                          <div className="font-mono text-[10px] text-it-muted mb-1">
                             {c.projeto.desenvolvedor.nomeEstudio} • {new Date(c.dataEnvio).toLocaleDateString('pt-BR')}
                           </div>
-                          <h3 className="font-display font-black text-2xl text-white uppercase tracking-tight">{c.projeto.nome}</h3>
-                          <p className="font-mono text-xs text-zinc-400 mt-1">Categoria: {c.projeto.categoria}</p>
+                          <h3 className="font-display font-black text-2xl text-it-text uppercase tracking-tight">{c.projeto.nome}</h3>
+                          <p className="font-mono text-xs text-it-muted mt-1">Categoria: {c.projeto.categoria}</p>
                         </div>
                         <div className="flex gap-3">
                           <button type="button" onClick={() => handleResponder(c.id, 'recusar')} disabled={respondendo === c.id}
-                            className="font-display font-bold uppercase tracking-widest px-5 py-3 bg-[#1C1D22] text-red-500 border-2 border-red-500/30 hover:border-red-500 hover:bg-red-500/10 transition-all flex items-center gap-2 disabled:opacity-50">
+                            className="font-display font-bold uppercase tracking-widest px-5 py-3 bg-it-surface text-red-500 border-2 border-red-500/30 hover:border-red-500 hover:bg-red-500/10 transition-all flex items-center gap-2 disabled:opacity-50">
                             <XCircle size={16} /> RECUSAR
                           </button>
                           <button type="button" onClick={() => handleResponder(c.id, 'aceitar')} disabled={respondendo === c.id}
@@ -134,17 +133,17 @@ export function Invites() {
             )}
             {processados.length > 0 && (
               <section>
-                <div className="flex items-center justify-between border-b border-[#2C2D35] pb-2 mb-4">
-                  <h2 className="text-xl font-display font-black text-zinc-500 uppercase tracking-tight">HISTÓRICO</h2>
+                <div className="flex items-center justify-between border-b border-it-border pb-2 mb-4">
+                  <h2 className="text-xl font-display font-black text-it-muted uppercase tracking-tight">HISTÓRICO</h2>
                 </div>
                 <div className="space-y-2">
                   {processados.map(c => (
-                    <div key={c.id} className="bg-[#1C1D22] border border-[#2C2D35] p-4 flex items-center justify-between opacity-60">
+                    <div key={c.id} className="bg-it-surface border border-it-border p-4 flex items-center justify-between opacity-60">
                       <div>
-                        <div className="font-mono text-[10px] text-zinc-600 mb-1">
+                        <div className="font-mono text-[10px] text-it-muted mb-1">
                           {c.projeto.desenvolvedor.nomeEstudio} • {new Date(c.dataEnvio).toLocaleDateString('pt-BR')}
                         </div>
-                        <h3 className="font-display font-bold text-lg text-zinc-400 uppercase">{c.projeto.nome}</h3>
+                        <h3 className="font-display font-bold text-lg text-it-muted uppercase">{c.projeto.nome}</h3>
                       </div>
                       <StatusBadge status={c.statusConvite} />
                     </div>
@@ -155,12 +154,12 @@ export function Invites() {
           </div>
         )}
 
-        <div className="mt-8 bg-[#1C1D22] border border-[#2C2D35] p-6">
+        <div className="mt-8 bg-it-surface border border-it-border p-6">
           <div className="flex items-start gap-3">
             <Shield size={18} className="text-[#4A3AFF] shrink-0 mt-0.5" />
             <div>
-              <span className="font-display font-bold text-sm text-white tracking-wide uppercase">Sobre Convites</span>
-              <p className="font-mono text-[10px] text-zinc-400 mt-1 uppercase leading-relaxed">
+              <span className="font-display font-bold text-sm text-it-text tracking-wide uppercase">Sobre Convites</span>
+              <p className="font-mono text-[10px] text-it-muted mt-1 uppercase leading-relaxed">
                 Os convites são enviados por desenvolvedores para o seu endereço de email ({user?.email}). Ao aceitar, você poderá iniciar sessões de teste no projeto.
               </p>
             </div>

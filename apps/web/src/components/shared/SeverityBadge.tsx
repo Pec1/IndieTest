@@ -5,7 +5,7 @@ const COLORS: Record<string, string> = {
   Critica: 'bg-red-500/10 text-red-500 border-red-500',
   Alta: 'bg-orange-500/10 text-orange-500 border-orange-500',
   Media: 'bg-[#D4FF00]/10 text-[#D4FF00] border-[#D4FF00]',
-  Baixa: 'bg-zinc-500/10 text-zinc-500 border-zinc-500',
+  Baixa: 'bg-zinc-500/10 text-it-muted border-zinc-500',
 };
 
 const LABELS: Record<string, string> = {
@@ -30,7 +30,7 @@ interface SeverityBadgeProps {
  * <SeverityBadge severity="Alta" size="lg" />
  */
 export function SeverityBadge({ severity, size = 'sm', className }: SeverityBadgeProps) {
-  const colorClass = COLORS[severity] || 'border-zinc-500 text-zinc-500';
+  const colorClass = COLORS[severity] || 'border-zinc-500 text-it-muted';
   const label = LABELS[severity] || severity;
 
   if (size === 'lg') {

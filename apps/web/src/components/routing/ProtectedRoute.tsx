@@ -11,7 +11,7 @@ export function ProtectedRoute({ children, tiposPermitidos }: Props) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0F1013] flex items-center justify-center">
+      <div className="min-h-screen bg-it-page flex items-center justify-center">
         <div className="font-mono text-[#D4FF00] text-sm animate-pulse tracking-widest">
           INICIALIZANDO_SISTEMA...
         </div>

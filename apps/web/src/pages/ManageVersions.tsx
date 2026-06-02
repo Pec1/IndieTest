@@ -4,7 +4,6 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { getProjeto, criarVersao, type Projeto, type Versao } from '../api/projetos';
 import { ApiError } from '../api/client';
 import { cn } from '../lib/utils';
-import { TechnicalLabel } from '../components/ui/TechnicalLabel';
 import { AppHeader } from '../components/ui/AppHeader';
 import { VersionCard } from '../components/shared/VersionCard';
 
@@ -53,7 +52,7 @@ export function ManageVersions() {
 
   if (carregando) {
     return (
-      <div className="min-h-screen bg-[#0F1013] flex items-center justify-center">
+      <div className="min-h-screen bg-it-page flex items-center justify-center">
         <p className="font-mono text-[#D4FF00] animate-pulse tracking-widest">CARREGANDO...</p>
       </div>
     );
@@ -63,19 +62,22 @@ export function ManageVersions() {
   const versoes = projeto.versoes || [];
 
   return (
-    <div className="min-h-screen bg-[#0F1013] text-white selection:bg-[#D4FF00] selection:text-black flex flex-col">
+    <div className="min-h-screen bg-it-page text-it-text selection:bg-[#D4FF00] selection:text-black flex flex-col">
       <AppHeader>
         <AppHeader.Brand />
         <AppHeader.Nav className="justify-between">
           <div className="flex items-center gap-4">
             <AppHeader.NavBack to={`/project/${id}`}><ArrowLeft size={16} /> VOLTAR_AO_PROJETO</AppHeader.NavBack>
             <AppHeader.NavDivider />
-            <AppHeader.NavLabel>GERENCIAR_VERSÕES // RF05</AppHeader.NavLabel>
+            <AppHeader.NavLabel>GERENCIAR_VERSÕES</AppHeader.NavLabel>
           </div>
-          <button type="button" onClick={() => setShowForm(!showForm)}
-            className="font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#D4FF00] text-black hover:bg-[#e2ff4d] transition-all text-xs flex items-center gap-2 shadow-[2px_2px_0_0_#4A3AFF]">
-            <Plus size={16} strokeWidth={2} /> NOVA_VERSÃO
-          </button>
+          <div className="flex items-stretch shrink-0">
+            <button type="button" onClick={() => setShowForm(!showForm)}
+              className="font-display font-bold uppercase tracking-widest px-4 py-2 bg-[#D4FF00] text-black hover:bg-[#e2ff4d] transition-all text-xs flex items-center gap-2 shadow-[2px_2px_0_0_#4A3AFF] border-r border-it-border">
+              <Plus size={16} strokeWidth={2} /> NOVA_VERSÃO
+            </button>
+            <AppHeader.Utilities />
+          </div>
         </AppHeader.Nav>
       </AppHeader>
       <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-8">
@@ -83,7 +85,7 @@ export function ManageVersions() {
           <h1 className="text-5xl font-display font-black uppercase tracking-tighter">
             Versões de <span className="text-[#D4FF00]">{projeto.nome}</span>
           </h1>
-          <p className="font-mono text-xs text-zinc-500 mt-2">{versoes.length} BUILD{versoes.length !== 1 ? 'S' : ''} REGISTRADA{versoes.length !== 1 ? 'S' : ''} // {projeto.categoria}</p>
+          <p className="font-mono text-xs text-it-muted mt-2">{versoes.length} BUILD{versoes.length !== 1 ? 'S' : ''} REGISTRADA{versoes.length !== 1 ? 'S' : ''} // {projeto.categoria}</p>
         </div>
         {sucesso && (
           <div className="mb-6 bg-[#10b981]/10 border border-[#10b981] p-4 font-mono text-xs text-[#10b981] flex items-center gap-2">
@@ -91,53 +93,52 @@ export function ManageVersions() {
           </div>
         )}
         {showForm && (
-          <div className="mb-8 bg-[#1C1D22] border-2 border-[#D4FF00] p-6">
-            <div className="flex items-center justify-between border-b border-[#2C2D35] pb-4 mb-6">
-              <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">NOVA_BUILD</h2>
-              <TechnicalLabel>RF05_VERSAO</TechnicalLabel>
+          <div className="mb-8 bg-it-surface border-2 border-[#D4FF00] p-6">
+            <div className="flex items-center justify-between border-b border-it-border pb-4 mb-6">
+              <h2 className="font-display font-black text-2xl text-it-text uppercase tracking-tight">NOVA_BUILD</h2>
             </div>
             {erro && <div className="mb-4 bg-red-500/10 border border-red-500/30 p-3 font-mono text-xs text-red-400">{erro}</div>}
             <form onSubmit={handleAdicionarVersao} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-mono text-[10px] font-bold uppercase text-zinc-400 tracking-widest flex items-center gap-2">
+                  <label className="font-mono text-[10px] font-bold uppercase text-it-muted tracking-widest flex items-center gap-2">
                     <span className="w-1.5 h-1.5 bg-[#D4FF00] inline-block" /> NÚMERO_DA_VERSÃO *
                   </label>
-                  <div className="flex items-center border border-[#2C2D35] bg-[#0F1013] focus-within:border-[#D4FF00] transition-colors">
+                  <div className="flex items-center border border-it-border bg-it-page focus-within:border-[#D4FF00] transition-colors">
                     <div className="pl-3 pr-2 text-[#D4FF00] font-mono font-bold select-none">&gt;</div>
                     <input type="text" value={novaVersao} onChange={e => setNovaVersao(e.target.value)} placeholder="EX: v1.3.0-beta" required
-                      className="w-full bg-transparent text-white rounded-none py-3 px-2 font-mono text-sm outline-none placeholder:text-zinc-600" />
+                      className="w-full bg-transparent text-it-text rounded-none py-3 px-2 font-mono text-sm outline-none placeholder:text-it-muted" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="font-mono text-[10px] font-bold uppercase text-zinc-400 tracking-widest flex items-center gap-2">
+                  <label className="font-mono text-[10px] font-bold uppercase text-it-muted tracking-widest flex items-center gap-2">
                     <span className="w-1.5 h-1.5 bg-[#D4FF00] inline-block" /> STATUS
                   </label>
-                  <div className="flex items-center border border-[#2C2D35] bg-[#0F1013] focus-within:border-[#D4FF00] transition-colors">
+                  <div className="flex items-center border border-it-border bg-it-page focus-within:border-[#D4FF00] transition-colors">
                     <div className="pl-3 pr-2 text-[#D4FF00] font-mono font-bold select-none">&gt;</div>
                     <select value={novoStatus} onChange={e => setNovoStatus(e.target.value)}
-                      className="w-full bg-transparent text-white rounded-none py-3 px-2 font-mono text-sm outline-none appearance-none cursor-pointer">
-                      <option value="ativa" className="bg-[#1C1D22]">ATIVA</option>
-                      <option value="beta" className="bg-[#1C1D22]">BETA</option>
-                      <option value="deprecated" className="bg-[#1C1D22]">DEPRECATED</option>
+                      className="w-full bg-transparent text-it-text rounded-none py-3 px-2 font-mono text-sm outline-none appearance-none cursor-pointer">
+                      <option value="ativa" className="bg-it-surface">ATIVA</option>
+                      <option value="beta" className="bg-it-surface">BETA</option>
+                      <option value="deprecated" className="bg-it-surface">DEPRECATED</option>
                     </select>
                   </div>
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="font-mono text-[10px] font-bold uppercase text-zinc-400 tracking-widest flex items-center gap-2">
+                <label className="font-mono text-[10px] font-bold uppercase text-it-muted tracking-widest flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-[#D4FF00] inline-block" /> CHANGELOG *
                 </label>
-                <div className="flex items-start border border-[#2C2D35] bg-[#0F1013] focus-within:border-[#D4FF00] transition-colors">
+                <div className="flex items-start border border-it-border bg-it-page focus-within:border-[#D4FF00] transition-colors">
                   <div className="pl-3 pr-2 pt-3 text-[#D4FF00] font-mono font-bold select-none">&gt;</div>
                   <textarea value={novoChangelog} onChange={e => setNovoChangelog(e.target.value)} rows={6} required
                     placeholder="• Correção de bugs&#10;• Melhorias de performance&#10;• Novas funcionalidades"
-                    className="w-full bg-transparent text-white rounded-none py-3 px-2 font-mono text-sm outline-none placeholder:text-zinc-600 resize-none" />
+                    className="w-full bg-transparent text-it-text rounded-none py-3 px-2 font-mono text-sm outline-none placeholder:text-it-muted resize-none" />
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4 border-t border-[#2C2D35]">
+              <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4 border-t border-it-border">
                 <button type="button" onClick={() => setShowForm(false)}
-                  className="font-display font-bold uppercase tracking-widest px-8 py-3 bg-[#1C1D22] text-white border border-[#2C2D35] hover:bg-[#25262c] hover:border-white transition-colors">
+                  className="font-display font-bold uppercase tracking-widest px-8 py-3 bg-it-surface text-it-text border border-it-border hover:bg-it-elevated hover:border-it-border-strong transition-colors">
                   CANCELAR
                 </button>
                 <button type="submit" disabled={salvando}
@@ -149,10 +150,10 @@ export function ManageVersions() {
           </div>
         )}
         {versoes.length === 0 ? (
-          <div className="border border-[#2C2D35] bg-[#1C1D22] p-16 text-center">
+          <div className="border border-it-border bg-it-surface p-16 text-center">
             <FileCode size={48} className="text-zinc-700 mx-auto mb-4" />
-            <p className="font-mono text-sm text-zinc-500 uppercase">[NENHUMA_VERSÃO_CADASTRADA]</p>
-            <p className="font-mono text-xs text-zinc-600 mt-2">Clique em "Nova Versão" para publicar a primeira build.</p>
+            <p className="font-mono text-sm text-it-muted uppercase">[NENHUMA_VERSÃO_CADASTRADA]</p>
+            <p className="font-mono text-xs text-it-muted mt-2">Clique em "Nova Versão" para publicar a primeira build.</p>
           </div>
         ) : (
           <div className="space-y-3">

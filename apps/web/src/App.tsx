@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { ErrorBoundary } from './components/routing/ErrorBoundary';
 import { ProtectedRoute } from './components/routing/ProtectedRoute';
 import { Auth } from './pages/Auth';
@@ -20,6 +21,7 @@ import { Notifications } from './pages/Notifications';
 export function App() {
   return (
     <ErrorBoundary>
+    <ThemeProvider>
     <AuthProvider>
       <BrowserRouter>
         <Routes>
@@ -41,6 +43,7 @@ export function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    </ThemeProvider>
     </ErrorBoundary>
   );
 }

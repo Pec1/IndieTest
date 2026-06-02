@@ -21,7 +21,7 @@ interface BugStatusBadgeProps {
  */
 export function BugStatusBadge({ status, className }: BugStatusBadgeProps) {
   const st = STATUSES.find(s => s.id === status);
-  if (!st) return <span className={cn("font-mono text-[10px] text-zinc-500", className)}>{status}</span>;
+  if (!st) return <span className={cn("font-mono text-[10px] text-it-muted", className)}>{status}</span>;
   return (
     <span
       className={cn("font-mono text-[10px] font-bold uppercase px-2 py-1 border", className)}

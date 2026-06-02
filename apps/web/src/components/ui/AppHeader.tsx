@@ -1,7 +1,8 @@
-import { Crosshair } from 'lucide-react';
+import { Crosshair, Settings } from 'lucide-react';
 import { Link } from 'react-router';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
+import { ThemeToggle } from './ThemeToggle';
 
 /**
  * Primitivo de header global do app.
@@ -12,7 +13,7 @@ import { useAuth } from '../../contexts/AuthContext';
  *   <AppHeader.Brand />
  *   <AppHeader.Nav>
  *     <AppHeader.NavBack to="/dashboard">VOLTAR</AppHeader.NavBack>
- *     <AppHeader.NavLabel>BUG_TRACKER // RF09</AppHeader.NavLabel>
+ *     <AppHeader.NavLabel>BUG_TRACKER</AppHeader.NavLabel>
  *   </AppHeader.Nav>
  *   <AppHeader.Actions>
  *     <button onClick={signOut}>SAIR</button>
@@ -22,7 +23,7 @@ import { useAuth } from '../../contexts/AuthContext';
 function AppHeader({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <header className={cn(
-      "flex flex-col md:flex-row items-stretch border-b border-[#2C2D35] bg-[#0F1013] sticky top-0 z-40",
+      "flex flex-col md:flex-row items-stretch border-b border-it-border bg-it-page sticky top-0 z-40",
       className
     )}>
       {children}
@@ -37,12 +38,12 @@ function AppHeaderBrand({ className }: { className?: string }) {
     <Link
       to={to}
       className={cn(
-        "flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-[#2C2D35] hover:bg-[#1C1D22] transition-colors",
+        "flex items-center gap-3 p-4 md:px-6 md:w-64 border-b md:border-b-0 md:border-r border-it-border hover:bg-it-surface transition-colors",
         className
       )}
     >
-      <Crosshair className="text-[#D4FF00]" strokeWidth={1.5} size={24} />
-      <h1 className="text-2xl font-black tracking-tighter uppercase text-white font-display">IndieTest</h1>
+      <Crosshair className="text-it-accent-fg" strokeWidth={1.5} size={24} />
+      <h1 className="text-2xl font-black tracking-tighter uppercase text-it-text font-display">IndieTest</h1>
     </Link>
   );
 }
@@ -59,8 +60,8 @@ function AppHeaderInfoBar({ children, className }: { children: React.ReactNode; 
 /** Célula individual de informação na InfoBar */
 function AppHeaderInfoCell({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("flex flex-col justify-center px-6 border-r border-[#2C2D35] min-w-max", className)}>
-      <span className="text-[10px] text-zinc-500 font-mono mb-1">{label}</span>
+    <div className={cn("flex flex-col justify-center px-6 border-r border-it-border min-w-max", className)}>
+      <span className="text-[10px] text-it-muted font-mono mb-1">{label}</span>
       <div className="font-mono text-sm">{children}</div>
     </div>
   );
@@ -83,17 +84,17 @@ function AppHeaderNavBack({ to, onClick, children, className }: {
   className?: string;
 }) {
   const base = cn(
-    "flex items-center gap-2 font-mono text-xs text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-[#2C2D35] p-2 bg-[#1C1D22]",
+    "flex items-center gap-2 font-mono text-xs text-it-muted hover:text-it-text transition-colors border border-transparent hover:border-it-border p-2 bg-it-surface",
     className
   );
   if (to) return <Link to={to} className={base}>{children}</Link>;
   return <button onClick={onClick} className={base}>{children}</button>;
 }
 
-/** Label de contexto/breadcrumb no Nav (ex: "BUG_TRACKER // RF09") */
+/** Label de contexto/breadcrumb no Nav (ex: "BUG_TRACKER") */
 function AppHeaderNavLabel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <span className={cn("font-mono text-xs text-[#D4FF00] font-bold tracking-widest", className)}>
+    <span className={cn("font-mono text-xs text-it-accent-fg font-bold tracking-widest", className)}>
       {children}
     </span>
   );
@@ -101,13 +102,46 @@ function AppHeaderNavLabel({ children, className }: { children: React.ReactNode;
 
 /** Separador vertical entre elementos do Nav */
 function AppHeaderNavDivider({ className }: { className?: string }) {
-  return <div className={cn("mx-4 h-4 w-px bg-[#2C2D35]", className)} />;
+  return <div className={cn("mx-4 h-4 w-px bg-it-border", className)} />;
+}
+
+/** Ícone de configurações + alternância de tema (barra do header) */
+function AppHeaderUtilities({
+  className,
+  hideSettings = false,
+  settingsBorder = true,
+}: {
+  className?: string;
+  hideSettings?: boolean;
+  settingsBorder?: boolean;
+}) {
+  return (
+    <div className={cn('flex items-stretch shrink-0', className)}>
+      {!hideSettings && (
+        <Link
+          to="/settings"
+          className={cn(
+            'flex items-center justify-center px-4 hover:bg-it-surface transition-colors group',
+            settingsBorder && 'border-r border-it-border',
+          )}
+          title="Configurações"
+        >
+          <Settings
+            size={20}
+            className="text-it-muted group-hover:text-it-header-icon-hover transition-colors"
+            strokeWidth={1.5}
+          />
+        </Link>
+      )}
+      <ThemeToggle variant="header" />
+    </div>
+  );
 }
 
 /** Área de ações (botões CTA, logout) alinhada à direita */
 function AppHeaderActions({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("hidden lg:flex items-center justify-center px-4 border-l border-[#2C2D35] gap-2", className)}>
+    <div className={cn('flex items-center justify-center px-4 border-l border-it-border gap-2 shrink-0', className)}>
       {children}
     </div>
   );
@@ -121,5 +155,6 @@ AppHeader.NavBack = AppHeaderNavBack;
 AppHeader.NavLabel = AppHeaderNavLabel;
 AppHeader.NavDivider = AppHeaderNavDivider;
 AppHeader.Actions = AppHeaderActions;
+AppHeader.Utilities = AppHeaderUtilities;
 
 export { AppHeader };

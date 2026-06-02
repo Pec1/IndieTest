@@ -20,11 +20,11 @@ interface TerminalFieldProps {
 export function TerminalField({ label, id, required, className, children }: TerminalFieldProps) {
   return (
     <div className={cn("space-y-2", className)}>
-      <label htmlFor={id} className="font-mono text-[10px] font-bold uppercase text-zinc-400 tracking-widest flex items-center gap-2">
+      <label htmlFor={id} className="font-mono text-[10px] font-bold uppercase text-it-muted tracking-widest flex items-center gap-2">
         <span className="w-1.5 h-1.5 bg-[#4A3AFF] inline-block" /> {label}
         {required && <span className="text-red-500">*</span>}
       </label>
-      <div className="relative group flex items-start border border-[#2C2D35] bg-[#1C1D22] focus-within:border-[#D4FF00] transition-colors">
+      <div className="relative group flex items-start border border-it-border bg-it-surface focus-within:border-[#D4FF00] transition-colors">
         <div className="pl-3 pr-2 pt-3 text-[#D4FF00] font-mono font-bold select-none">&gt;</div>
         {children}
       </div>

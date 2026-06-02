@@ -33,7 +33,7 @@ export function BrutalistButton({
         'font-display font-bold uppercase tracking-widest px-6 py-4 transition-all duration-75 active:translate-y-[2px] active:translate-x-[2px] border border-transparent flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed',
         isPrimary
           ? 'bg-[#D4FF00] text-black hover:bg-[#e2ff4d] shadow-[4px_4px_0_0_#4A3AFF] active:shadow-[0_0_0_0_#4A3AFF]'
-          : 'bg-[#1C1D22] text-white border-[#2C2D35] hover:border-[#D4FF00] shadow-[4px_4px_0_0_#000] active:shadow-[0_0_0_0_#000]',
+          : 'bg-it-surface text-it-text border-it-border hover:border-[#D4FF00] shadow-[4px_4px_0_0_var(--it-shadow)] active:shadow-[0_0_0_0_var(--it-shadow)]',
         className,
       )}
     >

@@ -2,9 +2,89 @@
 
 @import 'tailwindcss';
 
-@theme {
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
+
+/* ─── Tokens de tema ─── */
+:root,
+.dark {
+  color-scheme: dark;
+  --it-page: #0f1013;
+  --it-surface: #1c1d22;
+  --it-elevated: #25262c;
+  --it-border: #2c2d35;
+  --it-border-strong: #3f4149;
+  --it-text: #ffffff;
+  --it-muted: #a1a1aa;
+  --it-subtle: #71717a;
+  --it-input: #0f1013;
+  --it-watermark: rgb(39 39 42 / 0.12);
+  --it-shadow: rgba(0, 0, 0, 0.5);
+  --it-shadow-soft: rgba(74, 58, 255, 0.35);
+  --it-grid-line: rgba(255, 255, 255, 0.08);
+  --it-accent: #d4ff00;
+  --it-accent-fg: #d4ff00;
+  --it-accent-border: #d4ff00;
+  --it-accent-hover: #e2ff4d;
+  --it-accent-dim: rgb(212 255 0 / 0.12);
+  --it-purple: #4a3aff;
+  --it-purple-dim: rgb(74 58 255 / 0.15);
+  --it-icon: #71717a;
+  --it-icon-hover: #d4ff00;
+  --it-on-accent: #0f1013;
+  --it-on-purple: #ffffff;
+  --it-header-icon: #71717a;
+  --it-header-icon-hover: #d4ff00;
+}
+
+.light {
+  color-scheme: light;
+  --it-page: #e6e4dc;
+  --it-surface: #f5f4ef;
+  --it-elevated: #ffffff;
+  --it-border: #1a1b1f;
+  --it-border-strong: #0f1013;
+  --it-text: #0f1013;
+  --it-muted: #52555f;
+  --it-subtle: #6b6f7a;
+  --it-input: #ffffff;
+  --it-watermark: rgb(15 16 19 / 0.07);
+  --it-shadow: rgb(15 16 19 / 0.88);
+  --it-shadow-soft: rgb(74 58 255 / 0.35);
+  --it-grid-line: rgb(15 16 19 / 0.06);
+  /* Fundo de botão: lime vivo | Texto/borda: verde escuro (contraste no claro) */
+  --it-accent: #c8ef00;
+  --it-accent-fg: #2a4400;
+  --it-accent-border: #3f6212;
+  --it-accent-hover: #d4ff00;
+  --it-accent-dim: rgb(42 68 0 / 0.14);
+  --it-purple: #3d32e6;
+  --it-purple-dim: rgb(61 50 230 / 0.1);
+  --it-icon: #5c606b;
+  --it-icon-hover: #2a4400;
+  --it-on-accent: #0f1013;
+  --it-on-purple: #ffffff;
+  --it-header-icon: #5c606b;
+  --it-header-icon-hover: #3f6212;
+}
+
+@theme inline {
   --font-display: 'Oswald', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  --color-it-page: var(--it-page);
+  --color-it-surface: var(--it-surface);
+  --color-it-elevated: var(--it-elevated);
+  --color-it-border: var(--it-border);
+  --color-it-text: var(--it-text);
+  --color-it-muted: var(--it-muted);
+  --color-it-subtle: var(--it-subtle);
+  --color-it-input: var(--it-input);
+  --color-it-border-strong: var(--it-border-strong);
+  --color-it-header-icon: var(--it-header-icon);
+  --color-it-header-icon-hover: var(--it-header-icon-hover);
+  --color-it-accent-fg: var(--it-accent-fg);
+  --color-it-accent-border: var(--it-accent-border);
 }
 
 * {
@@ -13,8 +93,120 @@
 
 body {
   margin: 0;
-  background-color: #0F1013;
-  color: #fff;
+  background-color: var(--it-page);
+  color: var(--it-text);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+::selection {
+  background-color: var(--it-accent);
+  color: var(--it-on-accent);
+}
+
+/* Textos fixos em branco dentro de superfícies claras */
+.light .bg-it-page :where(.text-white:not(.text-on-brand)),
+.light .bg-it-surface :where(.text-white:not(.text-on-brand)),
+.light .bg-it-elevated :where(.text-white:not(.text-on-brand)),
+.light .bg-it-input :where(.text-white:not(.text-on-brand)),
+.light main :where(h1.text-white, h2.text-white, h3.text-white, h4.text-white, p.text-white, span.text-white:not(.text-on-brand), div.text-white) {
+  color: var(--it-text);
+}
+
+.text-on-brand {
+  color: var(--it-on-purple);
+}
+
+.light .bg-\[\#4A3AFF\]:not(.text-black),
+.light .bg-\[\#4A3AFF\] .text-it-text {
+  color: var(--it-on-purple);
+}
+
+.light :is(input, select, textarea).bg-transparent {
+  color: var(--it-text);
+}
+
+.light :is(input, select, textarea)::placeholder {
+  color: var(--it-muted);
+  opacity: 0.85;
+}
+
+.light .text-zinc-400,
+.light .text-zinc-500,
+.light .text-zinc-600 {
+  color: var(--it-muted);
+}
+
+.light .text-zinc-300 {
+  color: var(--it-subtle);
+}
+
+.light .text-zinc-700,
+.light .text-zinc-800 {
+  color: var(--it-subtle);
+}
+
+/* Verde lime (#D4FF00) → verde escuro legível em textos/ícones */
+.light :where(
+  .text-\[\#D4FF00\],
+  .text-\[\#d4ff00\],
+  .text-\[\#b8e600\],
+  .text-\[\#B8E600\],
+  .text-\[\#e2ff4d\],
+  .text-it-accent-fg
+) {
+  color: var(--it-accent-fg) !important;
+}
+
+.light :where(.group:hover .group-hover\:text-\[\#D4FF00\]) {
+  color: var(--it-accent-fg) !important;
+}
+
+.light [class*='border-[#D4FF00]'],
+.light [class*='border-[#d4ff00]'],
+.light [class*='border-[#b8e600]'] {
+  border-color: color-mix(in srgb, var(--it-accent-border) 100%, transparent) !important;
+}
+
+.light :where(.border-l-\[\#D4FF00\], .border-\[\#D4FF00\]) {
+  border-color: var(--it-accent-border) !important;
+}
+
+.light [class*='bg-[#D4FF00]/'],
+.light [class*='bg-[#d4ff00]/'] {
+  background-color: var(--it-accent-dim) !important;
+}
+
+.light :where(.bg-\[\#D4FF00\], .bg-\[\#d4ff00\], .bg-\[\#b8e600\]) {
+  background-color: var(--it-accent) !important;
+}
+
+.light :where(.focus\:border-\[\#D4FF00\]:focus),
+.light :where(.focus-within\:border-\[\#D4FF00\]:focus-within) {
+  border-color: var(--it-accent-border) !important;
+}
+
+.light :where(.hover\:border-\[\#D4FF00\]:hover) {
+  border-color: var(--it-accent-border) !important;
+}
+
+.light .text-it-header-icon-hover {
+  color: var(--it-accent-fg) !important;
+}
+
+/* Cards com sombra brutalist mais visível no claro */
+.light [class*='shadow-[16px'] {
+  box-shadow: 12px 12px 0 0 var(--it-shadow) !important;
+}
+
+.light [class*='shadow-[4px_4px'] {
+  box-shadow: 4px 4px 0 0 var(--it-shadow-soft) !important;
+}
+
+/* Grid decorativo */
+.it-grid-pattern {
+  background-image: linear-gradient(var(--it-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--it-grid-line) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -25,24 +217,33 @@ body {
   scrollbar-width: none;
 }
 
-button[role="switch"] {
+button[role='switch'] {
   border-radius: 0 !important;
 }
-button[role="switch"] [data-slot="switch-thumb"] {
+button[role='switch'] [data-slot='switch-thumb'] {
   border-radius: 0 !important;
 }
 
 @keyframes grid-pulse {
-  0%, 100% { opacity: 0.05; }
-  50% { opacity: 0.1; }
+  0%,
+  100% {
+    opacity: 0.04;
+  }
+  50% {
+    opacity: 0.1;
+  }
 }
 .animated-grid {
   animation: grid-pulse 3s ease-in-out infinite;
 }
 
 @keyframes slide-hazard {
-  0% { background-position: 0 0; }
-  100% { background-position: 40px 0; }
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 0;
+  }
 }
 .hazard-stripes {
   animation: slide-hazard 1s linear infinite;

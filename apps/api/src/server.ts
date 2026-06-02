@@ -54,7 +54,9 @@ const app = fastify().withTypeProvider<ZodTypeProvider>();
 app.register(fastifyCors, {
     origin: [
         'http://localhost:5173',
+        'http://localhost:5000',
         'http://0.0.0.0:5173',
+        'http://0.0.0.0:5000',
         /\.replit\.dev$/,
         /\.repl\.co$/,
         /\.app\.github\.dev$/,
