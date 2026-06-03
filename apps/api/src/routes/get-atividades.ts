@@ -4,10 +4,23 @@ import { authMiddleware, CRequest } from "../middleware/authenticate"
 
 export async function getAtividades(app: FastifyInstance) {
   app.get('/atividades', { preHandler: authMiddleware }, async (request: CRequest, reply) => {
+    const userId = request.user.userId
+
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    })
+
     const [bugs, sessoes, convites] = await Promise.all([
       prisma.feedbackBug.findMany({
         take: 8,
         orderBy: { dataCriacao: 'desc' },
+        where: {
+          OR: [
+            { testeSessao: { testador: { usuarioId: userId } } },
+            { testeSessao: { versao: { projeto: { desenvolvedor: { usuarioId: userId } } } } },
+          ],
+        },
         include: {
           testeSessao: {
             include: { versao: { include: { projeto: { select: { nome: true } } } } }
@@ -17,11 +30,23 @@ export async function getAtividades(app: FastifyInstance) {
       prisma.testeSessao.findMany({
         take: 5,
         orderBy: { dataInicio: 'desc' },
+        where: {
+          OR: [
+            { testador: { usuarioId: userId } },
+            { versao: { projeto: { desenvolvedor: { usuarioId: userId } } } },
+          ],
+        },
         include: { versao: { include: { projeto: { select: { nome: true } } } } },
       }),
       prisma.convite.findMany({
         take: 5,
         orderBy: { dataEnvio: 'desc' },
+        where: {
+          OR: [
+            ...(usuario ? [{ emailConvidado: usuario.email }] : []),
+            { projeto: { desenvolvedor: { usuarioId: userId } } },
+          ],
+        },
         select: { emailConvidado: true, dataEnvio: true, statusConvite: true, projeto: { select: { nome: true } } },
       }),
     ])

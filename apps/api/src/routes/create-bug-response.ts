@@ -31,9 +31,16 @@ export async function createBugResponse(app: FastifyInstance) {
             })
         }
 
-        const bug = await prisma.feedbackBug.findUnique({ where: { id: feedbackBugId } })
+        const bug = await prisma.feedbackBug.findUnique({
+            where: { id: feedbackBugId },
+            include: { testeSessao: { include: { versao: { include: { projeto: true } } } } },
+        })
         if (!bug) {
             return reply.status(404).send({ message: 'Bug não encontrado' })
+        }
+
+        if (bug.testeSessao?.versao?.projeto?.perfilDevId !== perfilDev.id) {
+            return reply.status(403).send({ message: 'Você não tem permissão para responder bugs deste projeto' })
         }
 
         const resposta = await prisma.respostaDesenvolvedor.create({

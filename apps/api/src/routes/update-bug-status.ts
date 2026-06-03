@@ -38,6 +38,10 @@ export async function updateBugStatus(app: FastifyInstance) {
             return reply.status(404).send({ message: 'Bug não encontrado' })
         }
 
+        if (!bug.testeSessao?.versao?.projeto?.desenvolvedor) {
+            return reply.status(404).send({ message: 'Projeto ou desenvolvedor não encontrado' })
+        }
+
         const isAdmin = await prisma.administrador.findUnique({ where: { usuarioId: userId } })
         const isOwnerDev = bug.testeSessao.versao.projeto.desenvolvedor.usuarioId === userId
 

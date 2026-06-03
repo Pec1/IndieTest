@@ -45,11 +45,13 @@ export async function updateConvite(app: FastifyInstance) {
 
         const novoStatus = acao === 'aceitar' ? 'aceito' : 'recusado'
 
-        // Ao aceitar, vincula o testador ao convite (se o usuário for testador)
         let testadorId: string | undefined
         if (acao === 'aceitar') {
             const testador = await prisma.testador.findUnique({ where: { usuarioId: userId } })
-            if (testador) testadorId = testador.id
+            if (!testador) {
+                return reply.status(403).send({ message: 'Apenas testadores podem aceitar convites' })
+            }
+            testadorId = testador.id
         }
 
         const atualizado = await prisma.convite.update({
